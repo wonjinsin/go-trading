@@ -1,0 +1,23 @@
+projectName: magmar
+domain: http://localhost:33333
+env: local
+
+database:
+  dialect: mysql
+  host: 127.0.0.1
+  port: 53306
+  dbname: magmar
+  username: root
+  password: mysqlvotmdnjem
+
+readOnlyDatabase:
+  dialect: mysql
+  host: 127.0.0.1
+  port: 53306
+  dbname: magmar
+  username: root
+  password: mysqlvotmdnjem
+
+redis:
+  host: 127.0.0.1
+  port: 56379
