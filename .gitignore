@@ -31,3 +31,4 @@ go.sum
 __debug_bin
 pkg.list
 
+config/*.yml
