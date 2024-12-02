@@ -11,8 +11,7 @@ import (
 	"magmar/model"
 	"magmar/util"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/tmc/langchaingo/llms/openai"
 	"gorm.io/gorm/logger"
 )
 
@@ -57,77 +56,35 @@ func init() {
 	}
 }
 
-// Repository ...
-type Repository struct {
-	User         UserRepository
-	UserReadOnly UserReadOnlyRepository
-}
-
 // Init ...
 func Init(magmar *config.ViperConfig) (*Repository, error) {
-	mysqlConn, err := mysqlConnect(magmar, "database")
-	if err != nil {
-		return nil, err
-	}
-
-	mysqlReadOnlyConn, err := mysqlConnect(magmar, "readOnlyDatabase")
+	openAPIConn, err := openAPIConnect(magmar)
 	if err != nil {
 		return nil, err
 	}
 
 	db := &model.DB{
-		MainDB: mysqlConn,
-		ReadDB: mysqlReadOnlyConn,
+		OpenAI: openAPIConn,
 	}
 
-	userRepo := NewGormUserRepository(db.MainDB)
-	userReadOnlyRepo := NewGormUserReadOnlyRepository(db.ReadDB)
+	qaRepo := NewOpenAPIQaRepository(db.OpenAI)
 
 	return &Repository{
-		User:         userRepo,
-		UserReadOnly: userReadOnlyRepo,
+		Qa: qaRepo,
 	}, nil
 }
 
-func mysqlConnect(magmar *config.ViperConfig, prefix string) (mysql *gorm.DB, err error) {
-	return gorm.Open(getDialector(magmar, prefix), &gorm.Config{})
+// Repository ...
+type Repository struct {
+	Qa QaRepository
 }
 
-func getDialector(magmar *config.ViperConfig, prefix string) gorm.Dialector {
-	dbURI := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?&charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=UTC",
-		magmar.GetString(fmt.Sprintf("%s.username", prefix)),
-		magmar.GetString(fmt.Sprintf("%s.password", prefix)),
-		magmar.GetString(fmt.Sprintf("%s.host", prefix)),
-		magmar.GetInt(fmt.Sprintf("%s.port", prefix)),
-		magmar.GetString(fmt.Sprintf("%s.dbname", prefix)),
-	)
-
-	return mysql.Open(dbURI)
+func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
+	opt := openai.WithToken(magmar.GetString("openAI.apiKey"))
+	return openai.New(opt)
 }
 
-func getConfig() (gConfig *gorm.Config) {
-	dbLogger := &dbLogger{zlog}
-	gConfig = &gorm.Config{
-		Logger:                                   dbLogger,
-		PrepareStmt:                              true,
-		SkipDefaultTransaction:                   true,
-		DisableForeignKeyConstraintWhenMigrating: true,
-	}
-
-	return gConfig
-}
-
-// UserRepository ...
-type UserRepository interface {
-	NewUser(ctx context.Context, user *model.User) (ruser *model.User, err error)
-	GetUser(ctx context.Context, uid string) (ruser *model.User, err error)
-	GetUserByEmail(ctx context.Context, email string) (ruser *model.User, err error)
-	UpdateUser(ctx context.Context, user *model.User) (ruser *model.User, err error)
-	DeleteUser(ctx context.Context, uid string) (err error)
-}
-
-// UserReadOnlyRepository ...
-type UserReadOnlyRepository interface {
-	GetUser(ctx context.Context, uid string) (ruser *model.User, err error)
-	GetUserByEmail(ctx context.Context, email string) (ruser *model.User, err error)
+// QaRepository ...
+type QaRepository interface {
+	Ask(ctx context.Context) (err error)
 }

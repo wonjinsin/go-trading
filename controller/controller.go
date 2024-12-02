@@ -47,15 +47,7 @@ func response(c echo.Context, code int, resultMsg string, result ...interface{})
 	return c.JSON(code, res)
 }
 
-// UserController ...
-type UserController interface {
-	GetUser(c echo.Context) (err error)
-	UpdateUser(c echo.Context) (err error)
-	DeleteUser(c echo.Context) (err error)
-}
-
-// AuthController ...
-type AuthController interface {
-	Signup(c echo.Context) (err error)
-	Signin(c echo.Context) (err error)
+// QaController ...
+type QaController interface {
+	Ask(c echo.Context) (err error)
 }

@@ -1,21 +1,13 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
+import "github.com/tmc/langchaingo/llms/openai"
 
 // DB ...
 type DB struct {
-	MainDB *gorm.DB
-	ReadDB *gorm.DB
+	OpenAI *openai.LLM
 }
 
-// WithMainDB ...
-func (db *DB) WithMainDB() *gorm.DB {
-	return db.MainDB
-}
-
-// WithReadDB ...
-func (db *DB) WithReadDB() *gorm.DB {
-	return db.ReadDB
+// WithOpenAI ...
+func (db *DB) WithOpenAI() *openai.LLM {
+	return db.OpenAI
 }
