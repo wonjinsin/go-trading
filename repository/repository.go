@@ -17,7 +17,6 @@ import (
 )
 
 var zlog *util.Logger
-var redisPrefix string
 
 type dbLogger struct {
 	*util.Logger
@@ -64,46 +63,30 @@ type Repository struct {
 	UserReadOnly UserReadOnlyRepository
 }
 
-// RedisRepository ...
-type RedisRepository struct {
-	UserReadOnly UserReadOnlyRepository
-}
-
 // Init ...
-func Init(magmar *config.ViperConfig) (*Repository, *RedisRepository, error) {
+func Init(magmar *config.ViperConfig) (*Repository, error) {
 	mysqlConn, err := mysqlConnect(magmar, "database")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	mysqlReadOnlyConn, err := mysqlConnect(magmar, "readOnlyDatabase")
 	if err != nil {
-		return nil, nil, err
-	}
-
-	redisPrefix = magmar.GetString("projectName")
-	redisConn, err := util.RedisConnect(magmar, zlog)
-	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	db := &model.DB{
 		MainDB: mysqlConn,
 		ReadDB: mysqlReadOnlyConn,
-		Redis:  redisConn,
 	}
 
 	userRepo := NewGormUserRepository(db.MainDB)
 	userReadOnlyRepo := NewGormUserReadOnlyRepository(db.ReadDB)
 
-	redisUserRepo := NewRedisUserRepository(db.Redis, userRepo)
-
 	return &Repository{
-			User:         userRepo,
-			UserReadOnly: userReadOnlyRepo,
-		}, &RedisRepository{
-			UserReadOnly: redisUserRepo,
-		}, nil
+		User:         userRepo,
+		UserReadOnly: userReadOnlyRepo,
+	}, nil
 }
 
 func mysqlConnect(magmar *config.ViperConfig, prefix string) (mysql *gorm.DB, err error) {
@@ -122,7 +105,7 @@ func getDialector(magmar *config.ViperConfig, prefix string) gorm.Dialector {
 	return mysql.Open(dbURI)
 }
 
-func getConfig(magmar *config.ViperConfig) (gConfig *gorm.Config) {
+func getConfig() (gConfig *gorm.Config) {
 	dbLogger := &dbLogger{zlog}
 	gConfig = &gorm.Config{
 		Logger:                                   dbLogger,

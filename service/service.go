@@ -29,7 +29,7 @@ type Service struct {
 }
 
 // Init ...
-func Init(conf *config.ViperConfig, repo *repository.Repository, redis *repository.RedisRepository) (*Service, error) {
+func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, error) {
 	userSvc := NewUserService(repo.User)
 	authSvc := NewAuthService(conf, repo.User)
 	return &Service{

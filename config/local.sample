@@ -18,10 +18,9 @@ readOnlyDatabase:
   username: root
   password: mysqlvotmdnjem
 
-redis:
-  host: 127.0.0.1
-  port: 56379
-
 upbitAPI:
   accessKey: aaa
   secretKey: bbb
+
+openAI:
+  apiKey: aaa

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
@@ -9,7 +8,6 @@ import (
 type DB struct {
 	MainDB *gorm.DB
 	ReadDB *gorm.DB
-	Redis  *redis.Client
 }
 
 // WithMainDB ...
@@ -20,9 +18,4 @@ func (db *DB) WithMainDB() *gorm.DB {
 // WithReadDB ...
 func (db *DB) WithReadDB() *gorm.DB {
 	return db.ReadDB
-}
-
-// WithRedis ...
-func (db *DB) WithRedis() *redis.Client {
-	return db.Redis
 }

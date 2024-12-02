@@ -13,7 +13,6 @@ import (
 
 	"github.com/dimiro1/banner"
 	"github.com/labstack/echo/v4"
-	// "github.com/rbcervilla/redisstore/v8"
 )
 
 var zlog *util.Logger
@@ -37,20 +36,13 @@ func main() {
 	e.Use(mw.RequestLogger(zlog))
 	e.HideBanner = true
 
-	sessionMiddleWare, err := mw.SetSession(magmar, zlog)
-	if err != nil {
-		fmt.Printf("Error when Start sessionMiddleware: %v\n", err)
-		os.Exit(1)
-	}
-	e.Use(sessionMiddleWare)
-
-	repo, redis, err := repository.Init(magmar)
+	repo, err := repository.Init(magmar)
 	if err != nil {
 		fmt.Printf("Error when Start repository: %v\n", err)
 		os.Exit(1)
 	}
 
-	svc, err := service.Init(magmar, repo, redis)
+	svc, err := service.Init(magmar, repo)
 	if err != nil {
 		fmt.Printf("Error when Start service: %v\n", err)
 		os.Exit(1)
