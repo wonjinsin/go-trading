@@ -8,11 +8,12 @@
       "name": "Launch",
       "type": "go",
       "request": "launch",
-      "mode": "auto",
+      "mode": "debug",
       "program": "${workspaceFolder}",
       "env": { "ENV": "local" },
-      "port": 2345,
-      "host": "127.0.0.1"
+      "dlvFlags": [
+        "--listen=:2345" // Delve 디버거가 이 포트를 사용하도록 설정
+      ]
     }
   ]
 }
