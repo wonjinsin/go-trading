@@ -68,23 +68,31 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 	}
 
 	qaRepo := NewOpenAPIQaRepository(db.OpenAI)
+	upbitBankRepo := NewUpbitBankRepository(magmar)
 
 	return &Repository{
-		Qa: qaRepo,
+		OpenAIQa:  qaRepo,
+		UpbitBank: upbitBankRepo,
 	}, nil
 }
 
 // Repository ...
 type Repository struct {
-	Qa QaRepository
+	OpenAIQa  QaRepository
+	UpbitBank BankRepository
 }
 
 func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
-	opt := openai.WithToken(magmar.GetString("openAI.apiKey"))
+	opt := openai.WithToken(magmar.GetString(util.OpenAPIKey))
 	return openai.New(opt)
 }
 
 // QaRepository ...
 type QaRepository interface {
 	Ask(ctx context.Context) (err error)
+}
+
+// BankRepository ...
+type BankRepository interface {
+	Buy(ctx context.Context) (err error)
 }

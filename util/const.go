@@ -44,7 +44,21 @@ func GetTRID() string {
 	return trid
 }
 
-// ContestKey ...
+// ContextKey ...
 const (
 	LoginKey = "login"
+)
+
+// EnvKey Consts
+const (
+	OpenAPIKey     = "openAI.apiKey"
+	UpbitAccessKey = "upbitAPI.accessKey"
+	UpbitSecretKey = "upbitAPI.secretKey"
+)
+
+// Log Const
+const (
+	LogCtrl = "[New Request]"
+	LogSvc  = "[New Service request]"
+	LogRepo = "[New Request]"
 )

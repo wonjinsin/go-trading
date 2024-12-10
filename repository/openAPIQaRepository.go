@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"magmar/util"
 
+	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
 )
 
-// OpenAPIQaRepository ...
 type openAPIQaRepository struct {
 	conn *openai.LLM
 }
@@ -18,5 +20,13 @@ func NewOpenAPIQaRepository(llm *openai.LLM) QaRepository {
 
 // Ask ...
 func (o *openAPIQaRepository) Ask(ctx context.Context) (err error) {
+	zlog.With(ctx).Infow(util.LogRepo)
+	prompt := "Hello"
+	completion, err := llms.GenerateFromSinglePrompt(ctx, o.conn, prompt)
+	if err != nil {
+		zlog.With(ctx).Errorw("Generate from single prompt failed")
+		return err
+	}
+	fmt.Println(completion)
 	return nil
 }
