@@ -14,6 +14,11 @@ ifneq (, $(CUSTOM_OS))
 else
 	OS ?= $(shell uname | awk '{print tolower($0)}')
 endif
+
+tool:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install go.uber.org/mock/mockgen@latest
+
 build:
 	GOOS=$(OS) go build -o $(BINARY_NAME) $(MAIN)
 
@@ -64,7 +69,7 @@ vendor: build-gomod \
 start:
 	@$(BIN)/$(PACKAGE)
 
-all: init tidy vendor build
+all: tool init tidy vendor build
 
 clean:; $(info cleaning…) @ 
 	@rm -rf vendor mock bin
