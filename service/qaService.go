@@ -8,20 +8,28 @@ import (
 )
 
 type qaUsecase struct {
-	conf         *config.ViperConfig
-	openAIqaRepo repository.QaRepository
+	conf          *config.ViperConfig
+	openAIqaRepo  repository.QaRepository
+	upbitBankRepo repository.BankRepository
 }
 
 // NewQaService ...
-func NewQaService(conf *config.ViperConfig, qaRepo repository.QaRepository) QaService {
+func NewQaService(conf *config.ViperConfig, qaRepo repository.QaRepository, upbitBankRepo repository.BankRepository) QaService {
 	return &qaUsecase{
-		conf:         conf,
-		openAIqaRepo: qaRepo,
+		conf:          conf,
+		openAIqaRepo:  qaRepo,
+		upbitBankRepo: upbitBankRepo,
 	}
 }
 
 // QaService ...
 func (q *qaUsecase) Ask(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	return q.openAIqaRepo.Ask(ctx)
+	err = q.upbitBankRepo.Buy(ctx)
+	if err != nil {
+		zlog.With(ctx).Errorw("Get token failed", "err", err)
+		return err
+	}
+	return nil
+	// return q.openAIqaRepo.Ask(ctx)
 }

@@ -94,5 +94,6 @@ type QaRepository interface {
 
 // BankRepository ...
 type BankRepository interface {
+	GetBalance(ctx context.Context) (*model.BankBalance, error)
 	Buy(ctx context.Context) (err error)
 }

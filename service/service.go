@@ -22,7 +22,7 @@ func init() {
 
 // Init ...
 func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, error) {
-	qaSvc := NewQaService(conf, repo.OpenAIQa)
+	qaSvc := NewQaService(conf, repo.OpenAIQa, repo.UpbitBank)
 	return &Service{
 		Qa: qaSvc,
 	}, nil

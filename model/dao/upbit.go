@@ -1,4 +1,4 @@
-package dto
+package dao
 
 import (
 	"github.com/golang-jwt/jwt/v5"
@@ -33,4 +33,10 @@ func (p *UpbitTokenPayload) GenerateJWT(secretKey string) (string, error) {
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaim).
 		SignedString(secretKeyByte)
+}
+
+// UpbitAccount ...
+type UpbitAccount struct {
+	Currency string `json:"currency"`
+	Balance  string `json:"balance"`
 }
