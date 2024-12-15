@@ -47,7 +47,7 @@ func response(c echo.Context, code int, resultMsg string, result ...interface{})
 	return c.JSON(code, res)
 }
 
-// QaController ...
-type QaController interface {
-	Ask(c echo.Context) (err error)
+// DealController ...
+type DealController interface {
+	Deal(c echo.Context) (err error)
 }

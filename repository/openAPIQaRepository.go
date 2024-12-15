@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"magmar/model"
 	"magmar/util"
 
 	"github.com/tmc/langchaingo/llms"
@@ -19,14 +20,17 @@ func NewOpenAPIQaRepository(llm *openai.LLM) QaRepository {
 }
 
 // Ask ...
-func (o *openAPIQaRepository) Ask(ctx context.Context) (err error) {
-	zlog.With(ctx).Infow(util.LogRepo)
-	prompt := "Hello"
-	completion, err := llms.GenerateFromSinglePrompt(ctx, o.conn, prompt)
+func (o *openAPIQaRepository) Ask(ctx context.Context, prompt string) (decision *model.Decision, err error) {
+	zlog.With(ctx).Infow(util.LogRepo, "prompt", prompt)
+	resp, err := llms.GenerateFromSinglePrompt(ctx, o.conn, prompt)
 	if err != nil {
 		zlog.With(ctx).Errorw("Generate from single prompt failed")
-		return err
+		return nil, err
 	}
-	fmt.Println(completion)
-	return nil
+
+	if err := json.Unmarshal([]byte(resp), &decision); err != nil {
+		zlog.With(ctx).Errorw("Unmarshal failed")
+		return nil, err
+	}
+	return decision, nil
 }

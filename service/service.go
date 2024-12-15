@@ -22,18 +22,18 @@ func init() {
 
 // Init ...
 func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, error) {
-	qaSvc := NewQaService(conf, repo.OpenAIQa, repo.UpbitBank)
+	dealSvc := NewDealService(conf, repo.OpenAIQa, repo.UpbitBank)
 	return &Service{
-		Qa: qaSvc,
+		Deal: dealSvc,
 	}, nil
 }
 
 // Service ...
 type Service struct {
-	Qa QaService
+	Deal DealService
 }
 
-// QaService ...
-type QaService interface {
-	Ask(ctx context.Context) (err error)
+// DealService ...
+type DealService interface {
+	Deal(ctx context.Context) (err error)
 }

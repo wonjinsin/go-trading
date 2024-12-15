@@ -16,7 +16,7 @@ func Init(e *echo.Echo, svc *service.Service) {
 }
 
 func makeV1QaRoute(ver *echo.Group, svc *service.Service) {
-	user := ver.Group("/qa")
-	qaCt := ct.NewQaController(svc.Qa)
-	user.POST("/ask", qaCt.Ask)
+	user := ver.Group("/deal")
+	dealCt := ct.NewDealController(svc.Deal)
+	user.POST("", dealCt.Deal)
 }

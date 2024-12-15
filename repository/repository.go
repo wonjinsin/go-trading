@@ -9,6 +9,7 @@ import (
 
 	"magmar/config"
 	"magmar/model"
+	"magmar/model/dao"
 	"magmar/util"
 
 	"github.com/tmc/langchaingo/llms/openai"
@@ -89,11 +90,12 @@ func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
 
 // QaRepository ...
 type QaRepository interface {
-	Ask(ctx context.Context) (err error)
+	Ask(ctx context.Context, prompt string) (decision *model.Decision, err error)
 }
 
 // BankRepository ...
 type BankRepository interface {
+	GetMarketPriceData(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
-	Buy(ctx context.Context) (err error)
+	Buy(ctx context.Context, bankBalance *model.BankBalance) (err error)
 }

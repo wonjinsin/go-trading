@@ -51,9 +51,11 @@ const (
 
 // EnvKey Consts
 const (
-	OpenAPIKey     = "openAI.apiKey"
-	UpbitAccessKey = "upbitAPI.accessKey"
-	UpbitSecretKey = "upbitAPI.secretKey"
+	OpenAPIKey      = "openAI.apiKey"
+	UpbitAccessKey  = "upbitAPI.accessKey"
+	UpbitSecretKey  = "upbitAPI.secretKey"
+	UpbitFeePercent = "upbitAPI.feePercent"
+	UpbitFeeScale   = "upbitAPI.feeScale"
 )
 
 // Log Const
@@ -61,4 +63,12 @@ const (
 	LogCtrl = "[New Request]"
 	LogSvc  = "[New Service request]"
 	LogRepo = "[New Request]"
+)
+
+// APIURL ...
+type APIURL string
+
+// APIURLConst ...
+const (
+	APIURLUpbit APIURL = "https://api.upbit.com"
 )
