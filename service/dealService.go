@@ -12,6 +12,8 @@ import (
 
 type dealUsecase struct {
 	conf          *config.ViperConfig
+	feePercent    uint
+	feeScale      uint
 	openAIqaRepo  repository.QaRepository
 	upbitBankRepo repository.BankRepository
 }
@@ -20,6 +22,8 @@ type dealUsecase struct {
 func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, upbitBankRepo repository.BankRepository) DealService {
 	return &dealUsecase{
 		conf:          conf,
+		feePercent:    conf.GetUint(util.UpbitFeePercent),
+		feeScale:      conf.GetUint(util.UpbitFeeScale),
 		openAIqaRepo:  qaRepo,
 		upbitBankRepo: upbitBankRepo,
 	}
@@ -28,13 +32,11 @@ func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, up
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	// decision, err := d.ask(ctx)
-	// if err != nil {
-	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
-	// 	return err
-	// }
-
-	decision := &model.Decision{Decision: model.DecisionStateBuy, Reason: "manual"}
+	decision, err := d.ask(ctx)
+	if err != nil {
+		zlog.With(ctx).Errorw("Ask failed", "err", err)
+		return err
+	}
 
 	zlog.With(ctx).Infow("Got decision", "decision", decision)
 
@@ -82,8 +84,9 @@ func (d *dealUsecase) buy(ctx context.Context) (err error) {
 	}
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
+	amount := balance.GetBuyAmount(d.feePercent, d.feeScale)
 
-	err = d.upbitBankRepo.Buy(ctx, balance)
+	err = d.upbitBankRepo.Buy(ctx, amount)
 	if err != nil {
 		zlog.With(ctx).Warnw("Buy failed", "err", err)
 		return err

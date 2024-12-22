@@ -3,8 +3,9 @@ package dao
 import (
 	"crypto/sha512"
 	"encoding/hex"
-	"net/url"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -42,6 +43,7 @@ type UpbitTokenPayload struct {
 	Nonce        string `json:"nonce"`
 	QueryHash    string `json:"query_hash"`
 	QueryHashAlg string `json:"query_hash_alg"`
+	Identifier   string `json:"identifier"`
 }
 
 // NewUpbitTokenPayload ...
@@ -53,11 +55,15 @@ func NewUpbitTokenPayload(accessKey string) *UpbitTokenPayload {
 }
 
 // NewSHA512UpbitTokenPayload ...
-func NewSHA512UpbitTokenPayload(accessKey string, hash string) *UpbitTokenPayload {
+func NewSHA512UpbitTokenPayload(accessKey string, query string) *UpbitTokenPayload {
+	hash := sha512.New()
+	hash.Write([]byte(query))
+	hashString := hex.EncodeToString(hash.Sum(nil))
+
 	return &UpbitTokenPayload{
 		AccessKey:    accessKey,
 		Nonce:        uuid.New().String(),
-		QueryHash:    hash,
+		QueryHash:    hashString,
 		QueryHashAlg: "SHA512",
 	}
 }
@@ -70,6 +76,8 @@ func (p *UpbitTokenPayload) GenerateJWT(secretKey string) (string, error) {
 		"nonce":          p.Nonce,
 		"query_hash":     p.QueryHash,
 		"query_hash_alg": p.QueryHashAlg,
+		"identifier":     p.Identifier,
+		"iat":            time.Now().Add(time.Hour * 1).Unix(),
 	}
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaim).
@@ -96,8 +104,8 @@ type UpbitMarketPrices []*UpbitMarketPrice
 type UpbitOrderBuy struct {
 	Market     UpbitStock     `json:"market"`
 	Side       UpbitOrderSide `json:"side"`
-	OrderType  UpbitOrderType `json:"ord_type"`
 	Price      string         `json:"price"`
+	OrderType  UpbitOrderType `json:"ord_type"`
 	Identifier string         `json:"identifier"`
 }
 
@@ -106,23 +114,19 @@ func NewUpbitOrderBuy(market UpbitStock, price uint64) *UpbitOrderBuy {
 	return &UpbitOrderBuy{
 		Market:     market,
 		Side:       UpbitOrderSideBuy,
+		Price:      strconv.FormatUint(uint64(9995), 10),
 		OrderType:  UpbitOrderTypePrice,
-		Price:      strconv.FormatUint(price, 10),
 		Identifier: uuid.New().String(),
 	}
 }
 
-// ToSHA512 ...
-func (p *UpbitOrderBuy) ToSHA512() string {
-	query := url.Values{
-		"market":     []string{string(p.Market)},
-		"side":       []string{string(p.Side)},
-		"price":      []string{p.Price},
-		"ord_type":   []string{string(p.OrderType)},
-		"identifier": []string{p.Identifier},
-	}
-
-	hash := sha512.New()
-	hash.Write([]byte(query.Encode()))
-	return hex.EncodeToString(hash.Sum(nil))
+// GetQuery ...
+func (p *UpbitOrderBuy) GetQuery() string {
+	return fmt.Sprintf("market=%s&side=%s&price=%s&ord_type=%s&identifier=%s",
+		p.Market,
+		p.Side,
+		p.Price,
+		p.OrderType,
+		p.Identifier,
+	)
 }

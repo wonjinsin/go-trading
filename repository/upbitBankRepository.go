@@ -14,23 +14,19 @@ import (
 )
 
 type upbitBankRepository struct {
-	accessKey  string
-	secretKey  string
-	feePercent uint
-	feeScale   uint
-	conn       *resty.Client
-	apiURL     util.APIURL
+	accessKey string
+	secretKey string
+	conn      *resty.Client
+	apiURL    util.APIURL
 }
 
 // NewUpbitBankRepository ...
 func NewUpbitBankRepository(conf *config.ViperConfig) BankRepository {
 	return &upbitBankRepository{
-		accessKey:  conf.GetString(util.UpbitAccessKey),
-		secretKey:  conf.GetString(util.UpbitSecretKey),
-		feePercent: conf.GetUint(util.UpbitFeePercent),
-		feeScale:   conf.GetUint(util.UpbitFeeScale),
-		conn:       resty.New(),
-		apiURL:     util.APIURLUpbit,
+		accessKey: conf.GetString(util.UpbitAccessKey),
+		secretKey: conf.GetString(util.UpbitSecretKey),
+		conn:      resty.New(),
+		apiURL:    util.APIURLUpbit,
 	}
 }
 
@@ -90,13 +86,12 @@ func (b *upbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalanc
 }
 
 // Buy ...
-func (b *upbitBankRepository) Buy(ctx context.Context, bankBalance *model.BankBalance) (err error) {
-	zlog.With(ctx).Infow(util.LogRepo, "bankBalance", bankBalance)
-	amount := bankBalance.GetBuyAmount(b.feePercent, b.feeScale)
+func (b *upbitBankRepository) Buy(ctx context.Context, amount uint64) (err error) {
+	zlog.With(ctx).Infow(util.LogRepo, "amount", amount)
 	orderBuy := dao.NewUpbitOrderBuy(dao.UpbitStockBTC, amount)
 	zlog.With(ctx).Infow("Order calculated", "orderBuy", orderBuy)
 
-	token, err := b.getSHA512Token(orderBuy.ToSHA512())
+	token, err := b.getSHA512Token(orderBuy)
 	if err != nil {
 		zlog.With(ctx).Errorw("Generate JWT failed", "err", err)
 		return err
@@ -116,7 +111,6 @@ func (b *upbitBankRepository) Buy(ctx context.Context, bankBalance *model.BankBa
 		return errors.NotImplementedf("Buy failed")
 	}
 
-	fmt.Println(resp.String())
 	return nil
 }
 
@@ -125,7 +119,7 @@ func (b *upbitBankRepository) getToken() (token string, err error) {
 	return tokenPayload.GenerateJWT(b.secretKey)
 }
 
-func (b *upbitBankRepository) getSHA512Token(hash string) (token string, err error) {
-	tokenPayload := dao.NewSHA512UpbitTokenPayload(b.accessKey, hash)
+func (b *upbitBankRepository) getSHA512Token(queryable dao.Queryable) (token string, err error) {
+	tokenPayload := dao.NewSHA512UpbitTokenPayload(b.accessKey, queryable.GetQuery())
 	return tokenPayload.GenerateJWT(b.secretKey)
 }
