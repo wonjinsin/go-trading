@@ -84,10 +84,32 @@ func (p *UpbitTokenPayload) GenerateJWT(secretKey string) (string, error) {
 		SignedString(secretKeyByte)
 }
 
+// UpbitCurrency ...
+type UpbitCurrency string
+
+// UpbitCurrencyConst ...
+const (
+	UpbitCurrencyKRW UpbitCurrency = "KRW"
+	UpbitCurrencyBTC UpbitCurrency = "BTC"
+)
+
 // UpbitAccount ...
 type UpbitAccount struct {
-	Currency string `json:"currency"`
-	Balance  string `json:"balance"`
+	Currency UpbitCurrency `json:"currency"`
+	Balance  string        `json:"balance"`
+}
+
+// UpbitAccounts ...
+type UpbitAccounts []*UpbitAccount
+
+// GetAccountByCurrency ...
+func (us UpbitAccounts) GetAccountByCurrency(currency UpbitCurrency) *UpbitAccount {
+	for _, account := range us {
+		if account.Currency == currency {
+			return account
+		}
+	}
+	return nil
 }
 
 // UpbitMarketPrice ...
@@ -114,7 +136,7 @@ func NewUpbitOrderBuy(market UpbitStock, price uint64) *UpbitOrderBuy {
 	return &UpbitOrderBuy{
 		Market:     market,
 		Side:       UpbitOrderSideBuy,
-		Price:      strconv.FormatUint(uint64(9995), 10),
+		Price:      strconv.FormatUint(price, 10),
 		OrderType:  UpbitOrderTypePrice,
 		Identifier: uuid.New().String(),
 	}
@@ -122,6 +144,37 @@ func NewUpbitOrderBuy(market UpbitStock, price uint64) *UpbitOrderBuy {
 
 // GetQuery ...
 func (p *UpbitOrderBuy) GetQuery() string {
+	return fmt.Sprintf("market=%s&side=%s&price=%s&ord_type=%s&identifier=%s",
+		p.Market,
+		p.Side,
+		p.Price,
+		p.OrderType,
+		p.Identifier,
+	)
+}
+
+// UpbitOrderSell ...
+type UpbitOrderSell struct {
+	Market     UpbitStock     `json:"market"`
+	Side       UpbitOrderSide `json:"side"`
+	Price      string         `json:"price"`
+	OrderType  UpbitOrderType `json:"ord_type"`
+	Identifier string         `json:"identifier"`
+}
+
+// NewUpbitOrderSell ...
+func NewUpbitOrderSell(market UpbitStock, price uint64) *UpbitOrderBuy {
+	return &UpbitOrderBuy{
+		Market:     market,
+		Side:       UpbitOrderSideSell,
+		Price:      strconv.FormatUint(price, 10),
+		OrderType:  UpbitOrderTypeMarket,
+		Identifier: uuid.New().String(),
+	}
+}
+
+// GetQuery ...
+func (p *UpbitOrderSell) GetQuery() string {
 	return fmt.Sprintf("market=%s&side=%s&price=%s&ord_type=%s&identifier=%s",
 		p.Market,
 		p.Side,
