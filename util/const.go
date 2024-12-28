@@ -51,11 +51,12 @@ const (
 
 // EnvKey Consts
 const (
-	OpenAPIKey      = "openAI.apiKey"
-	UpbitAccessKey  = "upbitAPI.accessKey"
-	UpbitSecretKey  = "upbitAPI.secretKey"
-	UpbitFeePercent = "upbitAPI.feePercent"
-	UpbitFeeScale   = "upbitAPI.feeScale"
+	OpenAPIKey        = "openAI.apiKey"
+	UpbitAccessKey    = "upbitAPI.accessKey"
+	UpbitSecretKey    = "upbitAPI.secretKey"
+	UpbitFeePercent   = "upbitAPI.feePercent"
+	UpbitFeeScale     = "upbitAPI.feeScale"
+	UpbitMinBuyAmount = "upbitAPI.minBuyAmount"
 )
 
 // Log Const

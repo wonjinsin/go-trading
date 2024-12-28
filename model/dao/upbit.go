@@ -157,17 +157,17 @@ func (p *UpbitOrderBuy) GetQuery() string {
 type UpbitOrderSell struct {
 	Market     UpbitStock     `json:"market"`
 	Side       UpbitOrderSide `json:"side"`
-	Price      string         `json:"price"`
+	Volume     string         `json:"volume"`
 	OrderType  UpbitOrderType `json:"ord_type"`
 	Identifier string         `json:"identifier"`
 }
 
 // NewUpbitOrderSell ...
-func NewUpbitOrderSell(market UpbitStock, price uint64) *UpbitOrderBuy {
-	return &UpbitOrderBuy{
+func NewUpbitOrderSell(market UpbitStock, price float64) *UpbitOrderSell {
+	return &UpbitOrderSell{
 		Market:     market,
 		Side:       UpbitOrderSideSell,
-		Price:      strconv.FormatUint(price, 10),
+		Volume:     strconv.FormatFloat(price, 'f', -1, 64),
 		OrderType:  UpbitOrderTypeMarket,
 		Identifier: uuid.New().String(),
 	}
@@ -175,10 +175,10 @@ func NewUpbitOrderSell(market UpbitStock, price uint64) *UpbitOrderBuy {
 
 // GetQuery ...
 func (p *UpbitOrderSell) GetQuery() string {
-	return fmt.Sprintf("market=%s&side=%s&price=%s&ord_type=%s&identifier=%s",
+	return fmt.Sprintf("market=%s&side=%s&volume=%s&ord_type=%s&identifier=%s",
 		p.Market,
 		p.Side,
-		p.Price,
+		p.Volume,
 		p.OrderType,
 		p.Identifier,
 	)

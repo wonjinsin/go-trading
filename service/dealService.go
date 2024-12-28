@@ -14,6 +14,7 @@ type dealUsecase struct {
 	conf          *config.ViperConfig
 	feePercent    uint
 	feeScale      uint
+	minBuyAmount  uint64
 	openAIqaRepo  repository.QaRepository
 	upbitBankRepo repository.BankRepository
 }
@@ -24,6 +25,7 @@ func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, up
 		conf:          conf,
 		feePercent:    conf.GetUint(util.UpbitFeePercent),
 		feeScale:      conf.GetUint(util.UpbitFeeScale),
+		minBuyAmount:  conf.GetUint64(util.UpbitMinBuyAmount),
 		openAIqaRepo:  qaRepo,
 		upbitBankRepo: upbitBankRepo,
 	}
@@ -32,13 +34,10 @@ func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, up
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	// decision, err := d.ask(ctx)
-	// if err != nil {
-	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
-	// 	return err
-	// }
-	decision := &model.Decision{
-		Decision: model.DecisionStateBuy,
+	decision, err := d.ask(ctx)
+	if err != nil {
+		zlog.With(ctx).Errorw("Ask failed", "err", err)
+		return err
 	}
 
 	zlog.With(ctx).Infow("Got decision", "decision", decision)
@@ -78,7 +77,7 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 }
 
 func (d *dealUsecase) buy(ctx context.Context) (err error) {
-	zlog.With(ctx).Infow("Buy start")
+	zlog.With(ctx).Infow("buy start")
 
 	balance, err := d.upbitBankRepo.GetBalance(ctx)
 	if err != nil {
@@ -88,6 +87,10 @@ func (d *dealUsecase) buy(ctx context.Context) (err error) {
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
 	amount := balance.GetBuyAmount(d.feePercent, d.feeScale)
+	if amount < d.minBuyAmount {
+		zlog.With(ctx).Infow("No KRW balance")
+		return nil
+	}
 
 	err = d.upbitBankRepo.Buy(ctx, amount)
 	if err != nil {
@@ -98,6 +101,27 @@ func (d *dealUsecase) buy(ctx context.Context) (err error) {
 	return nil
 }
 
-func (d *dealUsecase) sell(_ context.Context) (err error) {
+func (d *dealUsecase) sell(ctx context.Context) (err error) {
+	zlog.With(ctx).Infow("sell start")
+
+	balance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
+		return err
+	}
+
+	zlog.With(ctx).Infow("Got balance", "balance", balance)
+	amount := balance.GetSellAmount()
+	if amount == 0 {
+		zlog.With(ctx).Infow("No bitcoin balance")
+		return nil
+	}
+
+	err = d.upbitBankRepo.Sell(ctx, amount)
+	if err != nil {
+		zlog.With(ctx).Warnw("Sell failed", "err", err)
+		return err
+	}
+
 	return nil
 }

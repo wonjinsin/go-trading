@@ -19,3 +19,12 @@ func ParseUint64(a string) uint64 {
 	}
 	return result
 }
+
+// ParseFloat64 ...
+func ParseFloat64(a string) float64 {
+	result, err := strconv.ParseFloat(a, 64)
+	if err != nil {
+		return 0
+	}
+	return result
+}

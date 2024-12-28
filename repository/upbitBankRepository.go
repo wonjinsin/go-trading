@@ -95,7 +95,7 @@ func (b *upbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalanc
 
 	balance := &model.BankBalance{
 		Currency: string(account.Currency),
-		Balance:  util.ParseUint64(account.Balance),
+		Balance:  util.ParseFloat64(account.Balance),
 	}
 
 	return balance, nil
@@ -118,7 +118,7 @@ func (b *upbitBankRepository) GetBitCoinBalance(ctx context.Context) (*model.Ban
 
 	balance := &model.BankBalance{
 		Currency: string(account.Currency),
-		Balance:  util.ParseUint64(account.Balance),
+		Balance:  util.ParseFloat64(account.Balance),
 	}
 
 	return balance, nil
@@ -154,12 +154,12 @@ func (b *upbitBankRepository) Buy(ctx context.Context, amount uint64) (err error
 }
 
 // Sell ...
-func (b *upbitBankRepository) Sell(ctx context.Context, amount uint64) (err error) {
+func (b *upbitBankRepository) Sell(ctx context.Context, amount float64) (err error) {
 	zlog.With(ctx).Infow(util.LogRepo, "amount", amount)
-	orderBuy := dao.NewUpbitOrderBuy(dao.UpbitStockBTC, amount)
-	zlog.With(ctx).Infow("Order calculated", "orderBuy", orderBuy)
+	orderSell := dao.NewUpbitOrderSell(dao.UpbitStockBTC, amount)
+	zlog.With(ctx).Infow("Order calculated", "orderSell", orderSell)
 
-	token, err := b.getSHA512Token(orderBuy)
+	token, err := b.getSHA512Token(orderSell)
 	if err != nil {
 		zlog.With(ctx).Errorw("Generate JWT failed", "err", err)
 		return err
@@ -167,10 +167,10 @@ func (b *upbitBankRepository) Sell(ctx context.Context, amount uint64) (err erro
 
 	resp, err := b.conn.R().
 		SetAuthToken(token).
-		SetBody(orderBuy).
+		SetBody(orderSell).
 		Post(fmt.Sprintf("%s/v1/orders", b.apiURL))
 	if err != nil {
-		zlog.With(ctx).Errorw("Buy failed", "status", resp.StatusCode(), "resp", resp.String(), "err", err)
+		zlog.With(ctx).Errorw("Sell failed", "status", resp.StatusCode(), "resp", resp.String(), "err", err)
 		return err
 	}
 
