@@ -95,6 +95,7 @@ type QaRepository interface {
 
 // BankRepository ...
 type BankRepository interface {
+	GetOrderBook(ctx context.Context, stock dao.UpbitStock) (orderBook *model.OrderBook, err error)
 	GetMarketPriceData(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
 	GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error)

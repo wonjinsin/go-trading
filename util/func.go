@@ -2,6 +2,11 @@ package util
 
 import "strconv"
 
+// ToPtr ...
+func ToPtr[T any](v T) *T {
+	return &v
+}
+
 // Pow10 ...
 func Pow10(a uint64) uint64 {
 	result := uint64(1)

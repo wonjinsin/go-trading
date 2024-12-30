@@ -42,6 +42,8 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 
 	zlog.With(ctx).Infow("Got decision", "decision", decision)
 
+	// todo: add decision percentage
+	// todo: add to database result
 	switch decision.Decision {
 	case model.DecisionStateBuy:
 		err = d.buy(ctx)
@@ -57,16 +59,41 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	}
 
 	zlog.With(ctx).Infow("Process done")
+
 	return nil
 }
 
+// todo: add recursion asking also
 func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err error) {
+	// todo: get order book
+	// orderBook, err := d.upbitBankRepo.GetOrderBook(ctx, dao.UpbitStockBTC)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get order book failed", "err", err)
+	// 	return nil, err
+	// }
+
+	// 60days data
 	marketPrices, err := d.upbitBankRepo.GetMarketPriceData(ctx, dao.UpbitStockBTC, 60)
+	marketPrices.SetRSIs(14)
+	marketPrices.SetBollingerBands(20)
+	// todo: 24hours data
+
+	// todo: add assistant data, ex) rsi, macd, etc
+
+	// todo: add fear and greed index
+
+	// todo: add news data, ex) serp api
+
+	// todo: add chart data image(with selenium)
+
+	// todo: add youtube transcription data
+
 	if err != nil {
 		zlog.With(ctx).Warnw("Get token failed", "err", err)
 		return nil, err
 	}
 
+	// todo: add strict data json format for openai response
 	decision, err = d.openAIqaRepo.Ask(ctx, prompt.NewBitcoinPrompt(marketPrices))
 	if err != nil {
 		zlog.With(ctx).Warnw("Ask failed", "err", err)

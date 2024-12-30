@@ -30,6 +30,27 @@ func NewUpbitBankRepository(conf *config.ViperConfig) BankRepository {
 	}
 }
 
+// GetOrderBook ...
+func (b *upbitBankRepository) GetOrderBook(ctx context.Context, stock dao.UpbitStock) (orderBook *model.OrderBook, err error) {
+	zlog.With(ctx).Infow(util.LogRepo)
+	resp, err := b.conn.R().
+		SetResult(&orderBook).
+		SetQueryParam("level", "0").
+		SetQueryParam("markets", string(stock)).
+		Get(fmt.Sprintf("%s/v1/orderbook", b.apiURL))
+	if err != nil {
+		zlog.With(ctx).Errorw("Get order book failed", "err", err)
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		zlog.With(ctx).Errorw("Get order book failed", "status", resp.StatusCode())
+		return nil, errors.NotImplementedf("Get order book failed")
+	}
+
+	return orderBook, nil
+}
+
 // GetMarketPriceData ...
 func (b *upbitBankRepository) GetMarketPriceData(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
