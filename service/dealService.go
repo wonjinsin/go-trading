@@ -17,10 +17,16 @@ type dealUsecase struct {
 	minBuyAmount  uint64
 	openAIqaRepo  repository.QaRepository
 	upbitBankRepo repository.BankRepository
+	greedRepo     repository.GreedRepository
+	newsRepo      repository.NewsRepository
 }
 
 // NewDealService ...
-func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, upbitBankRepo repository.BankRepository) DealService {
+func NewDealService(conf *config.ViperConfig,
+	qaRepo repository.QaRepository,
+	upbitBankRepo repository.BankRepository,
+	greedRepo repository.GreedRepository,
+	newsRepo repository.NewsRepository) DealService {
 	return &dealUsecase{
 		conf:          conf,
 		feePercent:    conf.GetUint(util.UpbitFeePercent),
@@ -28,6 +34,8 @@ func NewDealService(conf *config.ViperConfig, qaRepo repository.QaRepository, up
 		minBuyAmount:  conf.GetUint64(util.UpbitMinBuyAmount),
 		openAIqaRepo:  qaRepo,
 		upbitBankRepo: upbitBankRepo,
+		greedRepo:     greedRepo,
+		newsRepo:      newsRepo,
 	}
 }
 
@@ -66,35 +74,44 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 // todo: add recursion asking also
 func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err error) {
 	// todo: get order book
-	// orderBook, err := d.upbitBankRepo.GetOrderBook(ctx, dao.UpbitStockBTC)
-	// if err != nil {
-	// 	zlog.With(ctx).Warnw("Get order book failed", "err", err)
-	// 	return nil, err
-	// }
-
-	// 60days data
-	marketPrices, err := d.upbitBankRepo.GetMarketPriceData(ctx, dao.UpbitStockBTC, 60)
-	marketPrices.SetRSIs(14)
-	marketPrices.SetBollingerBands(20)
-	// todo: 24hours data
-
-	// todo: add assistant data, ex) rsi, macd, etc
-
-	// todo: add fear and greed index
-
-	// todo: add news data, ex) serp api
-
-	// todo: add chart data image(with selenium)
-
-	// todo: add youtube transcription data
-
+	orderBook, err := d.upbitBankRepo.GetOrderBook(ctx, dao.UpbitStockBTC)
 	if err != nil {
-		zlog.With(ctx).Warnw("Get token failed", "err", err)
+		zlog.With(ctx).Warnw("Get order book failed", "err", err)
 		return nil, err
 	}
 
+	// 60days data
+	marketPricesDay, err := d.upbitBankRepo.GetMarketPriceDataDay(ctx, dao.UpbitStockBTC, 60)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get market price data day failed", "err", err)
+		return nil, err
+	}
+
+	// todo: 24hours data
+	marketPricesMin, err := d.upbitBankRepo.GetMarketPriceDataMin(ctx, dao.UpbitStockBTC, 60)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get market price data min failed", "err", err)
+		return nil, err
+	}
+
+	// todo: add fear and greed index
+	greedIndex, err := d.greedRepo.GetGreedIndex(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get greed index failed", "err", err)
+		return nil, err
+	}
+
+	// todo: add news data, ex) serp api
+	news, err := d.newsRepo.GetNews(ctx, []string{"bitcoin", "predict"})
+	if err != nil {
+		zlog.With(ctx).Warnw("Get news failed", "err", err)
+		return nil, err
+	}
+
+	// todo: add youtube transcription data
+
 	// todo: add strict data json format for openai response
-	decision, err = d.openAIqaRepo.Ask(ctx, prompt.NewBitcoinPrompt(marketPrices))
+	decision, err = d.openAIqaRepo.Ask(ctx, prompt.NewBitcoinPrompt(marketPricesDay))
 	if err != nil {
 		zlog.With(ctx).Warnw("Ask failed", "err", err)
 		return nil, err

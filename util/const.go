@@ -57,6 +57,7 @@ const (
 	UpbitFeePercent   = "upbitAPI.feePercent"
 	UpbitFeeScale     = "upbitAPI.feeScale"
 	UpbitMinBuyAmount = "upbitAPI.minBuyAmount"
+	NewsAPIKey        = "newsAPI.apiKey"
 )
 
 // Log Const
@@ -71,5 +72,7 @@ type APIURL string
 
 // APIURLConst ...
 const (
-	APIURLUpbit APIURL = "https://api.upbit.com"
+	APIURLUpbit    APIURL = "https://api.upbit.com"
+	AlternativeURL APIURL = "https://api.alternative.me"
+	NewsAPIURL     APIURL = "https://newsapi.org"
 )

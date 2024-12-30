@@ -51,8 +51,8 @@ func (b *upbitBankRepository) GetOrderBook(ctx context.Context, stock dao.UpbitS
 	return orderBook, nil
 }
 
-// GetMarketPriceData ...
-func (b *upbitBankRepository) GetMarketPriceData(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error) {
+// GetMarketPriceDataDay ...
+func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	var upbitMarketPrices dao.UpbitMarketPrices
 	resp, err := b.conn.R().
@@ -60,6 +60,31 @@ func (b *upbitBankRepository) GetMarketPriceData(ctx context.Context, stock dao.
 		SetQueryParam("market", string(stock)).
 		SetQueryParam("count", fmt.Sprintf("%d", date)).
 		Get(fmt.Sprintf("%s/v1/candles/days", b.apiURL))
+	if err != nil {
+		zlog.With(ctx).Errorw("Get market price failed", "err", err)
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		zlog.With(ctx).Errorw("Get market price failed", "status", resp.StatusCode())
+		return nil, errors.NotImplementedf("Get market price failed")
+	}
+
+	marketPrices = model.NewMarketPriceByUpbit(upbitMarketPrices)
+	marketPrices.SetRSIs(14)
+	marketPrices.SetBollingerBands(20)
+	return marketPrices, nil
+}
+
+// GetMarketPriceDataMin ...
+func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock dao.UpbitStock, interval uint) (marketPrices model.MarketPrices, err error) {
+	zlog.With(ctx).Infow(util.LogRepo)
+	var upbitMarketPrices dao.UpbitMarketPrices
+	resp, err := b.conn.R().
+		SetResult(&upbitMarketPrices).
+		SetQueryParam("market", string(stock)).
+		SetQueryParam("count", fmt.Sprintf("%d", 3600/interval)).
+		Get(fmt.Sprintf("%s/v1/candles/minutes/%d", b.apiURL, interval))
 	if err != nil {
 		zlog.With(ctx).Errorw("Get market price failed", "err", err)
 		return nil, err

@@ -70,17 +70,23 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 
 	qaRepo := NewOpenAPIQaRepository(db.OpenAI)
 	upbitBankRepo := NewUpbitBankRepository(magmar)
+	alternativeGreedRepo := NewAlternativeGreedRepository()
+	newsAPIRepo := NewNewsAPIRepository(magmar)
 
 	return &Repository{
-		OpenAIQa:  qaRepo,
-		UpbitBank: upbitBankRepo,
+		OpenAIQa:         qaRepo,
+		UpbitBank:        upbitBankRepo,
+		AlternativeGreed: alternativeGreedRepo,
+		News:             newsAPIRepo,
 	}, nil
 }
 
 // Repository ...
 type Repository struct {
-	OpenAIQa  QaRepository
-	UpbitBank BankRepository
+	OpenAIQa         QaRepository
+	UpbitBank        BankRepository
+	AlternativeGreed GreedRepository
+	News             NewsRepository
 }
 
 func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
@@ -96,9 +102,20 @@ type QaRepository interface {
 // BankRepository ...
 type BankRepository interface {
 	GetOrderBook(ctx context.Context, stock dao.UpbitStock) (orderBook *model.OrderBook, err error)
-	GetMarketPriceData(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error)
+	GetMarketPriceDataDay(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error)
+	GetMarketPriceDataMin(ctx context.Context, stock dao.UpbitStock, interval uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
 	GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error)
 	Buy(ctx context.Context, amount uint64) (err error)
 	Sell(ctx context.Context, amount float64) (err error)
+}
+
+// GreedRepository ...
+type GreedRepository interface {
+	GetGreedIndex(ctx context.Context) (index *model.GreedIndex, err error)
+}
+
+// NewsRepository ...
+type NewsRepository interface {
+	GetNews(ctx context.Context, keywords []string) (newses model.Newses, err error)
 }

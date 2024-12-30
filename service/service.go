@@ -22,7 +22,7 @@ func init() {
 
 // Init ...
 func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, error) {
-	dealSvc := NewDealService(conf, repo.OpenAIQa, repo.UpbitBank)
+	dealSvc := NewDealService(conf, repo.OpenAIQa, repo.UpbitBank, repo.AlternativeGreed)
 	return &Service{
 		Deal: dealSvc,
 	}, nil
