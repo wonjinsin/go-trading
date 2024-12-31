@@ -73,24 +73,21 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 
 // todo: add recursion asking also
 func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err error) {
-	// todo: get order book
-	orderBook, err := d.upbitBankRepo.GetOrderBook(ctx, dao.UpbitStockBTC)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get order book failed", "err", err)
-		return nil, err
-	}
-
-	// 60days data
 	marketPricesDay, err := d.upbitBankRepo.GetMarketPriceDataDay(ctx, dao.UpbitStockBTC, 60)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get market price data day failed", "err", err)
 		return nil, err
 	}
 
-	// todo: 24hours data
 	marketPricesMin, err := d.upbitBankRepo.GetMarketPriceDataMin(ctx, dao.UpbitStockBTC, 60)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get market price data min failed", "err", err)
+		return nil, err
+	}
+
+	orderBooks, err := d.upbitBankRepo.GetOrderBooks(ctx, dao.UpbitStockBTC)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get order book failed", "err", err)
 		return nil, err
 	}
 
@@ -101,17 +98,19 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 		return nil, err
 	}
 
-	// todo: add news data, ex) serp api
 	news, err := d.newsRepo.GetNews(ctx, []string{"bitcoin", "predict"})
 	if err != nil {
 		zlog.With(ctx).Warnw("Get news failed", "err", err)
 		return nil, err
 	}
 
-	// todo: add youtube transcription data
-
-	// todo: add strict data json format for openai response
-	decision, err = d.openAIqaRepo.Ask(ctx, prompt.NewBitcoinPrompt(marketPricesDay))
+	decision, err = d.openAIqaRepo.Ask(ctx, prompt.NewBitcoinPrompt(
+		marketPricesDay,
+		marketPricesMin,
+		orderBooks,
+		greedIndex,
+		news,
+	))
 	if err != nil {
 		zlog.With(ctx).Warnw("Ask failed", "err", err)
 		return nil, err

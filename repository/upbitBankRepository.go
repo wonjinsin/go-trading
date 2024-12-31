@@ -31,10 +31,10 @@ func NewUpbitBankRepository(conf *config.ViperConfig) BankRepository {
 }
 
 // GetOrderBook ...
-func (b *upbitBankRepository) GetOrderBook(ctx context.Context, stock dao.UpbitStock) (orderBook *model.OrderBook, err error) {
+func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock dao.UpbitStock) (orderBooks model.OrderBooks, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	resp, err := b.conn.R().
-		SetResult(&orderBook).
+		SetResult(&orderBooks).
 		SetQueryParam("level", "0").
 		SetQueryParam("markets", string(stock)).
 		Get(fmt.Sprintf("%s/v1/orderbook", b.apiURL))
@@ -48,7 +48,7 @@ func (b *upbitBankRepository) GetOrderBook(ctx context.Context, stock dao.UpbitS
 		return nil, errors.NotImplementedf("Get order book failed")
 	}
 
-	return orderBook, nil
+	return orderBooks, nil
 }
 
 // GetMarketPriceDataDay ...
@@ -71,8 +71,7 @@ func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock d
 	}
 
 	marketPrices = model.NewMarketPriceByUpbit(upbitMarketPrices)
-	marketPrices.SetRSIs(14)
-	marketPrices.SetBollingerBands(20)
+	marketPrices.SetIndicators()
 	return marketPrices, nil
 }
 
@@ -83,7 +82,7 @@ func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock d
 	resp, err := b.conn.R().
 		SetResult(&upbitMarketPrices).
 		SetQueryParam("market", string(stock)).
-		SetQueryParam("count", fmt.Sprintf("%d", 3600/interval)).
+		SetQueryParam("count", fmt.Sprintf("%d", 1440/interval)).
 		Get(fmt.Sprintf("%s/v1/candles/minutes/%d", b.apiURL, interval))
 	if err != nil {
 		zlog.With(ctx).Errorw("Get market price failed", "err", err)
@@ -96,6 +95,7 @@ func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock d
 	}
 
 	marketPrices = model.NewMarketPriceByUpbit(upbitMarketPrices)
+	marketPrices.SetIndicators()
 	return marketPrices, nil
 }
 

@@ -2,10 +2,12 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"magmar/model/dao"
 	"strconv"
 )
 
+// GreedIndexType ...
 type GreedIndexType string
 
 // GreedIndexType ...
@@ -51,4 +53,9 @@ func NewGreedIndexByAlternative(index string, alternativeIndexType dao.Alternati
 		Index:     uint(indexUint),
 		IndexType: indexType,
 	}, nil
+}
+
+// ToPromptData ...
+func (g *GreedIndex) ToPromptData() string {
+	return fmt.Sprintf("{greed_index: %d, greed_index_type: %s}", g.Index, g.IndexType)
 }

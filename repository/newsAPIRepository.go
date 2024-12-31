@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"magmar/config"
 	"magmar/model"
+	"magmar/model/dao"
 	"magmar/util"
 	"net/http"
 	"strings"
@@ -31,8 +32,10 @@ func NewNewsAPIRepository(magmar *config.ViperConfig) NewsRepository {
 // GetNews ...
 func (n *newsAPIRepository) GetNews(ctx context.Context, keywords []string) (newses model.Newses, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
+
+	var daoNews dao.News
 	resp, err := n.conn.R().
-		SetResult(&newses).
+		SetResult(&daoNews).
 		SetQueryParam("q", strings.Join(keywords, " and ")).
 		SetQueryParam("language", "en").
 		SetQueryParam("sortBy", "publishedAt").
@@ -49,5 +52,6 @@ func (n *newsAPIRepository) GetNews(ctx context.Context, keywords []string) (new
 		return nil, errors.NotImplementedf("Get news failed")
 	}
 
+	newses = model.NewNewses(daoNews)
 	return newses, nil
 }

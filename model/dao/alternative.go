@@ -15,6 +15,8 @@ const (
 
 // AlternativeGreedIndex ...
 type AlternativeGreedIndex struct {
-	Index     string
-	IndexType AlternativeGreedIndexType
+	Data []struct {
+		Value               string                    `json:"value"`
+		ValueClassification AlternativeGreedIndexType `json:"value_classification"`
+	} `json:"data"`
 }

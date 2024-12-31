@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"magmar/model"
 	"magmar/util"
 
@@ -24,9 +25,10 @@ func (o *openAPIQaRepository) Ask(ctx context.Context, prompt string) (decision 
 	zlog.With(ctx).Infow(util.LogRepo, "prompt", prompt)
 	resp, err := llms.GenerateFromSinglePrompt(ctx, o.conn, prompt)
 	if err != nil {
-		zlog.With(ctx).Errorw("Generate from single prompt failed")
+		zlog.With(ctx).Errorw("Generate from single prompt failed", "err", err)
 		return nil, err
 	}
+	fmt.Println(resp)
 
 	if err := json.Unmarshal([]byte(resp), &decision); err != nil {
 		zlog.With(ctx).Errorw("Unmarshal failed")

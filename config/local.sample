@@ -22,5 +22,8 @@ upbitAPI:
   accessKey: aaa
   secretKey: bbb
 
+newsAPI:
+  apiKey: aaa
+
 openAI:
   apiKey: aaa

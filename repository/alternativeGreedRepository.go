@@ -31,7 +31,7 @@ func (r *alternativeGreedRepository) GetGreedIndex(ctx context.Context) (*model.
 	var daoIndex dao.AlternativeGreedIndex
 	resp, err := r.conn.R().
 		SetResult(&daoIndex).
-		Get(fmt.Sprintf("%s/fng", r.apiURL))
+		Get(fmt.Sprintf("%s/fng/", r.apiURL))
 	if err != nil {
 		zlog.With(ctx).Errorw("Get greed index failed", "err", err)
 		return nil, err
@@ -42,7 +42,7 @@ func (r *alternativeGreedRepository) GetGreedIndex(ctx context.Context) (*model.
 		return nil, errors.NotImplementedf("Get greed index failed")
 	}
 
-	greedIndex, err := model.NewGreedIndexByAlternative(daoIndex.Index, daoIndex.IndexType)
+	greedIndex, err := model.NewGreedIndexByAlternative(daoIndex.Data[0].Value, daoIndex.Data[0].ValueClassification)
 	if err != nil {
 		zlog.With(ctx).Errorw("Parsing greed index failed", "err", err)
 		return nil, err
