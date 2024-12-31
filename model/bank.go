@@ -1,6 +1,9 @@
 package model
 
-import "magmar/util"
+import (
+	"magmar/util"
+	"math"
+)
 
 // BankBalance ...
 type BankBalance struct {
@@ -9,13 +12,17 @@ type BankBalance struct {
 }
 
 // GetBuyAmount can't be float64, calculate with uint64
-func (b *BankBalance) GetBuyAmount(feePercent uint, feeScale uint) (amount uint64) {
-	// (balance * feePercent + 99) / 100 for ceil
-	feeAmount := (uint64(b.Balance)*uint64(feePercent) + util.Pow10(uint64(feeScale)) - 1) / util.Pow10(uint64(feeScale))
-	return uint64(b.Balance) - feeAmount
+func (b *BankBalance) GetBuyAmount(percent uint, feePercent uint, feeScale uint) (amount uint64) {
+	price := uint64(b.Balance) * uint64(percent) / 100
+
+	scale := util.Pow10(uint64(feeScale))
+	feeAmountFloat := float64(price*uint64(feePercent)) / float64(scale)
+	feeAmount := uint64(math.Ceil(feeAmountFloat))
+
+	return price - feeAmount
 }
 
 // GetSellAmount ...
-func (b *BankBalance) GetSellAmount() (amount float64) {
-	return b.Balance
+func (b *BankBalance) GetSellAmount(percent uint) (amount float64) {
+	return b.Balance * float64(percent) / 100
 }

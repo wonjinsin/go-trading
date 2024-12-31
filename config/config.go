@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -53,20 +52,6 @@ func initViperConfig() *ViperConfig {
 	if v.GetString("env") == "local" {
 		v.Set("absPath", getRootDir())
 	}
-
-	prvTokenKey, err := ioutil.ReadFile("key/token_key")
-	if err != nil {
-		fmt.Printf("Error when reading prvTokenKey: %v\n", err)
-		os.Exit(1)
-	}
-	v.Set("prvTokenKey", prvTokenKey)
-
-	pubTokenKey, err := ioutil.ReadFile("key/token_key.pub")
-	if err != nil {
-		fmt.Printf("Error when reading pubTokenKey: %v\n", err)
-		os.Exit(1)
-	}
-	v.Set("pubTokenKey", pubTokenKey)
 
 	return &ViperConfig{v}
 }

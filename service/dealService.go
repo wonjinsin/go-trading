@@ -54,9 +54,9 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	// todo: add to database result
 	switch decision.Decision {
 	case model.DecisionStateBuy:
-		err = d.buy(ctx)
+		err = d.buy(ctx, decision.Percent)
 	case model.DecisionStateSell:
-		err = d.sell(ctx)
+		err = d.sell(ctx, decision.Percent)
 	case model.DecisionStateHold:
 		err = nil
 	}
@@ -91,7 +91,6 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 		return nil, err
 	}
 
-	// todo: add fear and greed index
 	greedIndex, err := d.greedRepo.GetGreedIndex(ctx)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get greed index failed", "err", err)
@@ -119,8 +118,13 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 	return decision, nil
 }
 
-func (d *dealUsecase) buy(ctx context.Context) (err error) {
-	zlog.With(ctx).Infow("buy start")
+func (d *dealUsecase) buy(ctx context.Context, percentage uint) (err error) {
+	zlog.With(ctx).Infow("buy start", "percentage", percentage)
+
+	if percentage == 0 {
+		zlog.With(ctx).Errorw("No percentage")
+		return nil
+	}
 
 	balance, err := d.upbitBankRepo.GetBalance(ctx)
 	if err != nil {
@@ -129,7 +133,7 @@ func (d *dealUsecase) buy(ctx context.Context) (err error) {
 	}
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
-	amount := balance.GetBuyAmount(d.feePercent, d.feeScale)
+	amount := balance.GetBuyAmount(percentage, d.feePercent, d.feeScale)
 	if amount < d.minBuyAmount {
 		zlog.With(ctx).Infow("No KRW balance")
 		return nil
@@ -144,8 +148,13 @@ func (d *dealUsecase) buy(ctx context.Context) (err error) {
 	return nil
 }
 
-func (d *dealUsecase) sell(ctx context.Context) (err error) {
-	zlog.With(ctx).Infow("sell start")
+func (d *dealUsecase) sell(ctx context.Context, percentage uint) (err error) {
+	zlog.With(ctx).Infow("sell start", "percentage", percentage)
+
+	if percentage == 0 {
+		zlog.With(ctx).Errorw("No percentage")
+		return nil
+	}
 
 	balance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
 	if err != nil {
@@ -154,7 +163,7 @@ func (d *dealUsecase) sell(ctx context.Context) (err error) {
 	}
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
-	amount := balance.GetSellAmount()
+	amount := balance.GetSellAmount(percentage)
 	if amount == 0 {
 		zlog.With(ctx).Infow("No bitcoin balance")
 		return nil

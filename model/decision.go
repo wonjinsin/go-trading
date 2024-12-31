@@ -47,5 +47,6 @@ func (ds *DecisionState) UnmarshalJSON(data []byte) (err error) {
 // Decision ...
 type Decision struct {
 	Decision DecisionState `json:"decision"`
+	Percent  uint          `json:"percent"`
 	Reason   string        `json:"reason"`
 }
