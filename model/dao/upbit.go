@@ -95,8 +95,9 @@ const (
 
 // UpbitAccount ...
 type UpbitAccount struct {
-	Currency UpbitCurrency `json:"currency"`
-	Balance  string        `json:"balance"`
+	Currency    UpbitCurrency `json:"currency"`
+	Balance     string        `json:"balance"`
+	AvgBuyPrice string        `json:"avg_buy_price"`
 }
 
 // UpbitAccounts ...
@@ -182,4 +183,12 @@ func (p *UpbitOrderSell) GetQuery() string {
 		p.OrderType,
 		p.Identifier,
 	)
+}
+
+// UpbitTransactionResult ...
+type UpbitTransactionResult struct {
+	Market     UpbitStock `json:"market"`
+	Identifier *string    `json:"identifier"`
+	Price      *string    `json:"price"`
+	Volume     *string    `json:"volume"`
 }

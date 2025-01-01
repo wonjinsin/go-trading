@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"magmar/config"
 	"magmar/model"
 	"magmar/model/dao"
@@ -11,14 +12,15 @@ import (
 )
 
 type dealUsecase struct {
-	conf          *config.ViperConfig
-	feePercent    uint
-	feeScale      uint
-	minBuyAmount  uint64
-	openAIqaRepo  repository.QaRepository
-	upbitBankRepo repository.BankRepository
-	greedRepo     repository.GreedRepository
-	newsRepo      repository.NewsRepository
+	conf            *config.ViperConfig
+	feePercent      uint
+	feeScale        uint
+	minBuyAmount    uint64
+	openAIqaRepo    repository.QaRepository
+	upbitBankRepo   repository.BankRepository
+	greedRepo       repository.GreedRepository
+	newsRepo        repository.NewsRepository
+	transactionRepo repository.TransactionRepository
 }
 
 // NewDealService ...
@@ -26,43 +28,55 @@ func NewDealService(conf *config.ViperConfig,
 	qaRepo repository.QaRepository,
 	upbitBankRepo repository.BankRepository,
 	greedRepo repository.GreedRepository,
-	newsRepo repository.NewsRepository) DealService {
+	newsRepo repository.NewsRepository,
+	transactionRepo repository.TransactionRepository) DealService {
 	return &dealUsecase{
-		conf:          conf,
-		feePercent:    conf.GetUint(util.UpbitFeePercent),
-		feeScale:      conf.GetUint(util.UpbitFeeScale),
-		minBuyAmount:  conf.GetUint64(util.UpbitMinBuyAmount),
-		openAIqaRepo:  qaRepo,
-		upbitBankRepo: upbitBankRepo,
-		greedRepo:     greedRepo,
-		newsRepo:      newsRepo,
+		conf:            conf,
+		feePercent:      conf.GetUint(util.UpbitFeePercent),
+		feeScale:        conf.GetUint(util.UpbitFeeScale),
+		minBuyAmount:    conf.GetUint64(util.UpbitMinBuyAmount),
+		openAIqaRepo:    qaRepo,
+		upbitBankRepo:   upbitBankRepo,
+		greedRepo:       greedRepo,
+		newsRepo:        newsRepo,
+		transactionRepo: transactionRepo,
 	}
 }
 
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	decision, err := d.ask(ctx)
+	// decision, err := d.ask(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
+	// 	return err
+	// }
+
+	// zlog.With(ctx).Infow("Got decision", "decision", decision)
+
+	decision := &model.Decision{
+		Decision: model.DecisionStateBuy,
+		Percent:  10,
+	}
+
+	var trResult *model.BankTransactionResult
+	switch decision.Decision {
+	case model.DecisionStateBuy:
+		trResult, err = d.buy(ctx, decision.Percent)
+	case model.DecisionStateSell:
+		trResult, err = d.sell(ctx, decision.Percent)
+	case model.DecisionStateHold:
+		trResult = model.NewBankTransactionResultHold()
+	}
+	trResult.SetReason(decision.Reason)
+
 	if err != nil {
-		zlog.With(ctx).Errorw("Ask failed", "err", err)
+		zlog.With(ctx).Warnw("Decision handle failed", "err", err)
 		return err
 	}
 
-	zlog.With(ctx).Infow("Got decision", "decision", decision)
-
-	// todo: add decision percentage
-	// todo: add to database result
-	switch decision.Decision {
-	case model.DecisionStateBuy:
-		err = d.buy(ctx, decision.Percent)
-	case model.DecisionStateSell:
-		err = d.sell(ctx, decision.Percent)
-	case model.DecisionStateHold:
-		err = nil
-	}
-
-	if err != nil {
-		zlog.With(ctx).Warnw("Buy failed", "err", err)
+	if _, err = d.saveTransaction(ctx, trResult); err != nil {
+		zlog.With(ctx).Warnw("Save transaction failed", "err", err)
 		return err
 	}
 
@@ -118,62 +132,100 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 	return decision, nil
 }
 
-func (d *dealUsecase) buy(ctx context.Context, percentage uint) (err error) {
+func (d *dealUsecase) buy(ctx context.Context, percentage uint) (trResult *model.BankTransactionResult, err error) {
 	zlog.With(ctx).Infow("buy start", "percentage", percentage)
 
 	if percentage == 0 {
 		zlog.With(ctx).Errorw("No percentage")
-		return nil
+		return nil, errors.New("no percentage")
 	}
 
 	balance, err := d.upbitBankRepo.GetBalance(ctx)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get balance failed", "err", err)
-		return err
+		return nil, err
 	}
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
 	amount := balance.GetBuyAmount(percentage, d.feePercent, d.feeScale)
 	if amount < d.minBuyAmount {
 		zlog.With(ctx).Infow("No KRW balance")
-		return nil
+		return model.NewBankTransactionResultBuyFailed(util.RemarkBankTransactionResultBuyFailedMinAmount), nil
 	}
 
-	err = d.upbitBankRepo.Buy(ctx, amount)
+	trResult, err = d.upbitBankRepo.Buy(ctx, amount)
 	if err != nil {
 		zlog.With(ctx).Warnw("Buy failed", "err", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return trResult, nil
 }
 
-func (d *dealUsecase) sell(ctx context.Context, percentage uint) (err error) {
+func (d *dealUsecase) sell(ctx context.Context, percentage uint) (trResult *model.BankTransactionResult, err error) {
 	zlog.With(ctx).Infow("sell start", "percentage", percentage)
 
 	if percentage == 0 {
 		zlog.With(ctx).Errorw("No percentage")
-		return nil
+		return nil, errors.New("No percentage")
 	}
 
 	balance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
-		return err
+		return nil, err
 	}
 
 	zlog.With(ctx).Infow("Got balance", "balance", balance)
 	amount := balance.GetSellAmount(percentage)
 	if amount == 0 {
 		zlog.With(ctx).Infow("No bitcoin balance")
-		return nil
+		return model.NewBankTransactionResultSellFailed(util.RemarkBankTransactionResultSellFailedMinAmount), nil
 	}
 
-	err = d.upbitBankRepo.Sell(ctx, amount)
+	trResult, err = d.upbitBankRepo.Sell(ctx, amount)
 	if err != nil {
 		zlog.With(ctx).Warnw("Sell failed", "err", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return trResult, nil
+}
+
+func (d *dealUsecase) saveTransaction(ctx context.Context, trResult *model.BankTransactionResult) (transaction *model.TransactionAggregate, err error) {
+	zlog.With(ctx).Infow("saveTransaction start", "trResult", trResult)
+
+	bankBalance, err := d.upbitBankRepo.GetBalance(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get balance failed", "err", err)
+		return nil, err
+	}
+
+	bitCoinBalance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
+		return nil, err
+	}
+
+	totalDeposit, err := d.transactionRepo.GetTotalDeposit(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get total deposit failed", "err", err)
+		return nil, err
+	}
+
+	totalWithdrawal, err := d.transactionRepo.GetTotalWithdrawal(ctx)
+	if err != nil {
+		zlog.With(ctx).Warnw("Get total withdrawal failed", "err", err)
+		return nil, err
+	}
+
+	transaction = model.NewTransactionAggregate(trResult, bankBalance, bitCoinBalance, totalDeposit, totalWithdrawal)
+
+	transaction, err = d.transactionRepo.NewTransaction(ctx, transaction)
+	if err != nil {
+		zlog.With(ctx).Warnw("Save transaction failed", "err", err)
+		return nil, err
+	}
+
+	return transaction, nil
 }

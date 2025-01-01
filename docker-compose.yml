@@ -1,0 +1,18 @@
+version: "3"
+services:
+  mysql:
+    container_name: magmar_mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlvotmdnjem
+      MYSQL_DATABASE: magmar
+      MYSQL_USER: magmar
+      MYSQL_PASSWORD: mysqlvotmdnjem
+      TZ: UTC
+    command: --default-time-zone='+00:00'
+    ports:
+      - 53306:3306
+
+networks:
+  default:
+    name: magmar_network

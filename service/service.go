@@ -27,6 +27,7 @@ func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, erro
 		repo.UpbitBank,
 		repo.AlternativeGreed,
 		repo.News,
+		repo.Transaction,
 	)
 	return &Service{
 		Deal: dealSvc,

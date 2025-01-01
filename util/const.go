@@ -51,6 +51,11 @@ const (
 
 // EnvKey Consts
 const (
+	DBHostKey         = "database.host"
+	DBPortKey         = "database.port"
+	DBNameKey         = "database.dbname"
+	DBUserKey         = "database.username"
+	DBPasswordKey     = "database.password"
 	OpenAPIKey        = "openAI.apiKey"
 	UpbitAccessKey    = "upbitAPI.accessKey"
 	UpbitSecretKey    = "upbitAPI.secretKey"
@@ -75,4 +80,10 @@ const (
 	APIURLUpbit    APIURL = "https://api.upbit.com"
 	AlternativeURL APIURL = "https://api.alternative.me"
 	NewsAPIURL     APIURL = "https://newsapi.org"
+)
+
+// Remark Consts
+const (
+	RemarkBankTransactionResultBuyFailedMinAmount  string = "Bank balance is less than in amount to buy"
+	RemarkBankTransactionResultSellFailedMinAmount string = "Bank balance is less than in amount to sell"
 )

@@ -13,6 +13,8 @@ import (
 	"magmar/util"
 
 	"github.com/tmc/langchaingo/llms/openai"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
@@ -59,6 +61,11 @@ func init() {
 
 // Init ...
 func Init(magmar *config.ViperConfig) (*Repository, error) {
+	mysqlConn, err := mysqlConnect(magmar)
+	if err != nil {
+		return nil, err
+	}
+
 	openAPIConn, err := openAPIConnect(magmar)
 	if err != nil {
 		return nil, err
@@ -66,18 +73,21 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 
 	db := &model.DB{
 		OpenAI: openAPIConn,
+		MainDB: mysqlConn,
 	}
 
 	qaRepo := NewOpenAPIQaRepository(db.OpenAI)
 	upbitBankRepo := NewUpbitBankRepository(magmar)
 	alternativeGreedRepo := NewAlternativeGreedRepository()
 	newsAPIRepo := NewNewsAPIRepository(magmar)
+	transactionRepo := NewGormTransactionRepository(db.MainDB)
 
 	return &Repository{
 		OpenAIQa:         qaRepo,
 		UpbitBank:        upbitBankRepo,
 		AlternativeGreed: alternativeGreedRepo,
 		News:             newsAPIRepo,
+		Transaction:      transactionRepo,
 	}, nil
 }
 
@@ -87,11 +97,40 @@ type Repository struct {
 	UpbitBank        BankRepository
 	AlternativeGreed GreedRepository
 	News             NewsRepository
+	Transaction      TransactionRepository
 }
 
 func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
 	opt := openai.WithToken(magmar.GetString(util.OpenAPIKey))
 	return openai.New(opt)
+}
+
+func mysqlConnect(magmar *config.ViperConfig) (*gorm.DB, error) {
+	return gorm.Open(getDialector(magmar), getConfig())
+}
+
+func getDialector(magmar *config.ViperConfig) gorm.Dialector {
+	dbURI := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?&charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=UTC",
+		magmar.GetString(util.DBUserKey),
+		magmar.GetString(util.DBPasswordKey),
+		magmar.GetString(util.DBHostKey),
+		magmar.GetInt(util.DBPortKey),
+		magmar.GetString(util.DBNameKey),
+	)
+
+	return mysql.Open(dbURI)
+}
+
+func getConfig() (gConfig *gorm.Config) {
+	dbLogger := &dbLogger{zlog}
+	gConfig = &gorm.Config{
+		Logger:                                   dbLogger,
+		PrepareStmt:                              true,
+		SkipDefaultTransaction:                   true,
+		DisableForeignKeyConstraintWhenMigrating: true,
+	}
+
+	return gConfig
 }
 
 // QaRepository ...
@@ -106,8 +145,8 @@ type BankRepository interface {
 	GetMarketPriceDataMin(ctx context.Context, stock dao.UpbitStock, interval uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
 	GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error)
-	Buy(ctx context.Context, amount uint64) (err error)
-	Sell(ctx context.Context, amount float64) (err error)
+	Buy(ctx context.Context, amount uint64) (*model.BankTransactionResult, error)
+	Sell(ctx context.Context, amount float64) (*model.BankTransactionResult, error)
 }
 
 // GreedRepository ...
@@ -118,4 +157,12 @@ type GreedRepository interface {
 // NewsRepository ...
 type NewsRepository interface {
 	GetNews(ctx context.Context, keywords []string) (newses model.Newses, err error)
+}
+
+// TransactionRepository ...
+type TransactionRepository interface {
+	NewTransaction(ctx context.Context, transaction *model.TransactionAggregate) (*model.TransactionAggregate, error)
+	GetTransactions(ctx context.Context) (model.TransactionAggregates, error)
+	GetTotalDeposit(ctx context.Context) (float64, error)
+	GetTotalWithdrawal(ctx context.Context) (float64, error)
 }
