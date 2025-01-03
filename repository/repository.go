@@ -9,7 +9,6 @@ import (
 
 	"magmar/config"
 	"magmar/model"
-	"magmar/model/dao"
 	"magmar/util"
 
 	"github.com/tmc/langchaingo/llms/openai"
@@ -140,9 +139,9 @@ type QaRepository interface {
 
 // BankRepository ...
 type BankRepository interface {
-	GetOrderBooks(ctx context.Context, stock dao.UpbitStock) (orderBooks model.OrderBooks, err error)
-	GetMarketPriceDataDay(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error)
-	GetMarketPriceDataMin(ctx context.Context, stock dao.UpbitStock, interval uint) (marketPrices model.MarketPrices, err error)
+	GetOrderBooks(ctx context.Context, stock model.StockName) (orderBooks model.OrderBooks, err error)
+	GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error)
+	GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
 	GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error)
 	Buy(ctx context.Context, amount uint64) (*model.BankTransactionResult, error)

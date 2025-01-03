@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	"errors"
 	"magmar/config"
 	"magmar/model"
-	"magmar/model/dao"
 	"magmar/prompt"
 	"magmar/repository"
 	"magmar/util"
+
+	"github.com/juju/errors"
 )
 
 type dealUsecase struct {
@@ -46,18 +46,13 @@ func NewDealService(conf *config.ViperConfig,
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	// decision, err := d.ask(ctx)
-	// if err != nil {
-	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
-	// 	return err
-	// }
-
-	// zlog.With(ctx).Infow("Got decision", "decision", decision)
-
-	decision := &model.Decision{
-		Decision: model.DecisionStateBuy,
-		Percent:  10,
+	decision, err := d.ask(ctx)
+	if err != nil {
+		zlog.With(ctx).Errorw("Ask failed", "err", err)
+		return err
 	}
+
+	zlog.With(ctx).Infow("Got decision", "decision", decision)
 
 	var trResult *model.BankTransactionResult
 	switch decision.Decision {
@@ -87,19 +82,19 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 
 // todo: add recursion asking also
 func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err error) {
-	marketPricesDay, err := d.upbitBankRepo.GetMarketPriceDataDay(ctx, dao.UpbitStockBTC, 60)
+	marketPricesDay, err := d.upbitBankRepo.GetMarketPriceDataDay(ctx, model.StockNameUpbitBTC, 60)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get market price data day failed", "err", err)
 		return nil, err
 	}
 
-	marketPricesMin, err := d.upbitBankRepo.GetMarketPriceDataMin(ctx, dao.UpbitStockBTC, 60)
+	marketPricesMin, err := d.upbitBankRepo.GetMarketPriceDataMin(ctx, model.StockNameUpbitBTC, 60)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get market price data min failed", "err", err)
 		return nil, err
 	}
 
-	orderBooks, err := d.upbitBankRepo.GetOrderBooks(ctx, dao.UpbitStockBTC)
+	orderBooks, err := d.upbitBankRepo.GetOrderBooks(ctx, model.StockNameUpbitBTC)
 	if err != nil {
 		zlog.With(ctx).Warnw("Get order book failed", "err", err)
 		return nil, err
@@ -202,7 +197,7 @@ func (d *dealUsecase) saveTransaction(ctx context.Context, trResult *model.BankT
 	}
 
 	bitCoinBalance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, errors.NotFound) {
 		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
 		return nil, err
 	}

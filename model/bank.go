@@ -14,6 +14,15 @@ type BankBalance struct {
 	AvgBuyPrice float64
 }
 
+// NewBankBalance ...
+func NewBankBalance(currency string, balance float64, avgBuyPrice float64) *BankBalance {
+	return &BankBalance{
+		Currency:    currency,
+		Balance:     balance,
+		AvgBuyPrice: avgBuyPrice,
+	}
+}
+
 // GetBuyAmount can't be float64, calculate with uint64
 func (b *BankBalance) GetBuyAmount(percent uint, feePercent uint, feeScale uint) (amount uint64) {
 	price := uint64(b.Balance) * uint64(percent) / 100
@@ -121,5 +130,9 @@ func NewBankTransactionResultHold() *BankTransactionResult {
 
 // SetReason ...
 func (b *BankTransactionResult) SetReason(reason string) {
+	if reason == "" {
+		return
+	}
+
 	b.Reason = util.ToPtr(reason)
 }

@@ -31,7 +31,7 @@ func NewUpbitBankRepository(conf *config.ViperConfig) BankRepository {
 }
 
 // GetOrderBook ...
-func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock dao.UpbitStock) (orderBooks model.OrderBooks, err error) {
+func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock model.StockName) (orderBooks model.OrderBooks, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	resp, err := b.conn.R().
 		SetResult(&orderBooks).
@@ -52,7 +52,7 @@ func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock dao.Upbit
 }
 
 // GetMarketPriceDataDay ...
-func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock dao.UpbitStock, date uint) (marketPrices model.MarketPrices, err error) {
+func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	var upbitMarketPrices dao.UpbitMarketPrices
 	resp, err := b.conn.R().
@@ -76,7 +76,7 @@ func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock d
 }
 
 // GetMarketPriceDataMin ...
-func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock dao.UpbitStock, interval uint) (marketPrices model.MarketPrices, err error) {
+func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	var upbitMarketPrices dao.UpbitMarketPrices
 	resp, err := b.conn.R().
@@ -142,7 +142,7 @@ func (b *upbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalanc
 	balance := &model.BankBalance{
 		Currency:    string(account.Currency),
 		Balance:     util.ParseFloat64(account.Balance),
-		AvgBuyPrice: util.ParseFloat64(account.AvgBuyPrice),
+		AvgBuyPrice: util.ParseFloat64("1"),
 	}
 
 	return balance, nil
