@@ -93,7 +93,7 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 // Repository ...
 type Repository struct {
 	OpenAIQa         QaRepository
-	UpbitBank        BankRepository
+	UpbitBank        StockBankRepository
 	AlternativeGreed GreedRepository
 	News             NewsRepository
 	Transaction      TransactionRepository
@@ -137,8 +137,8 @@ type QaRepository interface {
 	Ask(ctx context.Context, prompt string) (decision *model.Decision, err error)
 }
 
-// BankRepository ...
-type BankRepository interface {
+// StockBankRepository ...
+type StockBankRepository interface {
 	GetOrderBooks(ctx context.Context, stock model.StockName) (orderBooks model.OrderBooks, err error)
 	GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error)
 	GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error)

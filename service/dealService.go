@@ -17,7 +17,7 @@ type dealUsecase struct {
 	feeScale        uint
 	minBuyAmount    uint64
 	openAIqaRepo    repository.QaRepository
-	upbitBankRepo   repository.BankRepository
+	upbitBankRepo   repository.StockBankRepository
 	greedRepo       repository.GreedRepository
 	newsRepo        repository.NewsRepository
 	transactionRepo repository.TransactionRepository
@@ -26,7 +26,7 @@ type dealUsecase struct {
 // NewDealService ...
 func NewDealService(conf *config.ViperConfig,
 	qaRepo repository.QaRepository,
-	upbitBankRepo repository.BankRepository,
+	upbitBankRepo repository.StockBankRepository,
 	greedRepo repository.GreedRepository,
 	newsRepo repository.NewsRepository,
 	transactionRepo repository.TransactionRepository) DealService {
@@ -46,10 +46,15 @@ func NewDealService(conf *config.ViperConfig,
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	decision, err := d.ask(ctx)
-	if err != nil {
-		zlog.With(ctx).Errorw("Ask failed", "err", err)
-		return err
+	// decision, err := d.ask(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
+	// 	return err
+	// }
+
+	decision := model.Decision{
+		Decision: model.DecisionStateSell,
+		Percent:  100,
 	}
 
 	zlog.With(ctx).Infow("Got decision", "decision", decision)
@@ -80,7 +85,6 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	return nil
 }
 
-// todo: add recursion asking also
 func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err error) {
 	marketPricesDay, err := d.upbitBankRepo.GetMarketPriceDataDay(ctx, model.StockNameUpbitBTC, 60)
 	if err != nil {
@@ -167,6 +171,10 @@ func (d *dealUsecase) sell(ctx context.Context, percentage uint) (trResult *mode
 
 	balance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
 	if err != nil {
+		if errors.Is(err, errors.NotFound) {
+			zlog.With(ctx).Infow("No bitcoin balance")
+			return model.NewBankTransactionResultSellFailed(util.RemarkBankTransactionResultSellFailedMinAmount), nil
+		}
 		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
 		return nil, err
 	}

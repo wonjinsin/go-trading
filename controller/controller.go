@@ -51,3 +51,9 @@ func response(c echo.Context, code int, resultMsg string, result ...interface{})
 type DealController interface {
 	Deal(c echo.Context) (err error)
 }
+
+// BankController ...
+type BankController interface {
+	Deposit(c echo.Context) (err error)
+	Withdrawal(c echo.Context) (err error)
+}

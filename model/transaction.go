@@ -154,7 +154,9 @@ func NewTransactionSummary(
 	}
 
 	currentBalance := ts.TotalBankBalance + ts.TotalInvestBalance
-	ts.TotalProfit = (currentBalance - totalDeposit + totalWithdrawal) / totalDeposit * 100
+	if totalDeposit != 0 {
+		ts.TotalProfit = (currentBalance - totalDeposit + totalWithdrawal) / totalDeposit * 100
+	}
 
 	return ts
 }

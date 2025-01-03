@@ -114,7 +114,7 @@ func NewBankTransactionResultSell(result *dao.UpbitTransactionResult) *BankTrans
 // NewBankTransactionResultSellFailed ...
 func NewBankTransactionResultSellFailed(remark string) *BankTransactionResult {
 	return &BankTransactionResult{
-		Stock:  string(dao.UpbitStockBTC),
+		Stock:  string(StockNameUpbitBTC),
 		TrType: TransactionTypeSellFailed,
 		Remark: &remark,
 	}
@@ -123,9 +123,45 @@ func NewBankTransactionResultSellFailed(remark string) *BankTransactionResult {
 // NewBankTransactionResultHold ...
 func NewBankTransactionResultHold() *BankTransactionResult {
 	return &BankTransactionResult{
-		Stock:  string(dao.UpbitStockBTC),
+		Stock:  string(StockNameUpbitBTC),
 		TrType: TransactionTypeHold,
 	}
+}
+
+// NewBankTransactionResultDeposit ...
+func NewBankTransactionResultDeposit(volume float64) *BankTransactionResult {
+	return &BankTransactionResult{
+		Stock:  string(StockNameBank),
+		TrType: TransactionTypeDeposit,
+		Volume: &volume,
+		Price:  util.ToPtr(1.0),
+	}
+}
+
+// NewBankTransactionResultWithdrawal ...
+func NewBankTransactionResultWithdrawal(volume float64) *BankTransactionResult {
+	return &BankTransactionResult{
+		Stock:  string(StockNameBank),
+		TrType: TransactionTypeWithdrawal,
+		Volume: &volume,
+		Price:  util.ToPtr(1.0),
+	}
+}
+
+// NewTotalDeposit ...
+func (b *BankTransactionResult) NewTotalDeposit(totalDeposit float64) float64 {
+	if b.TrType == TransactionTypeDeposit && b.Volume != nil {
+		return *b.Volume + totalDeposit
+	}
+	return totalDeposit
+}
+
+// NewTotalWithdrawal ...
+func (b *BankTransactionResult) NewTotalWithdrawal(totalWithdrawal float64) float64 {
+	if b.TrType == TransactionTypeWithdrawal && b.Volume != nil {
+		return *b.Volume + totalWithdrawal
+	}
+	return totalWithdrawal
 }
 
 // SetReason ...

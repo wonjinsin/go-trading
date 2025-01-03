@@ -13,16 +13,16 @@ import (
 	"github.com/juju/errors"
 )
 
-type upbitBankRepository struct {
+type stockUpbitBankRepository struct {
 	accessKey string
 	secretKey string
 	conn      *resty.Client
 	apiURL    util.APIURL
 }
 
-// NewUpbitBankRepository ...
-func NewUpbitBankRepository(conf *config.ViperConfig) StockBankRepository {
-	return &upbitBankRepository{
+// NewStockUpbitBankRepository ...
+func NewStockUpbitBankRepository(conf *config.ViperConfig) StockBankRepository {
+	return &stockUpbitBankRepository{
 		accessKey: conf.GetString(util.UpbitAccessKey),
 		secretKey: conf.GetString(util.UpbitSecretKey),
 		conn:      resty.New(),
@@ -31,7 +31,7 @@ func NewUpbitBankRepository(conf *config.ViperConfig) StockBankRepository {
 }
 
 // GetOrderBook ...
-func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock model.StockName) (orderBooks model.OrderBooks, err error) {
+func (b *stockUpbitBankRepository) GetOrderBooks(ctx context.Context, stock model.StockName) (orderBooks model.OrderBooks, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	resp, err := b.conn.R().
 		SetResult(&orderBooks).
@@ -52,7 +52,7 @@ func (b *upbitBankRepository) GetOrderBooks(ctx context.Context, stock model.Sto
 }
 
 // GetMarketPriceDataDay ...
-func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error) {
+func (b *stockUpbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	var upbitMarketPrices dao.UpbitMarketPrices
 	resp, err := b.conn.R().
@@ -76,7 +76,7 @@ func (b *upbitBankRepository) GetMarketPriceDataDay(ctx context.Context, stock m
 }
 
 // GetMarketPriceDataMin ...
-func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error) {
+func (b *stockUpbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	var upbitMarketPrices dao.UpbitMarketPrices
 	resp, err := b.conn.R().
@@ -99,7 +99,7 @@ func (b *upbitBankRepository) GetMarketPriceDataMin(ctx context.Context, stock m
 	return marketPrices, nil
 }
 
-func (b *upbitBankRepository) getBalance(ctx context.Context) (dao.UpbitAccounts, error) {
+func (b *stockUpbitBankRepository) getBalance(ctx context.Context) (dao.UpbitAccounts, error) {
 	token, err := b.getToken()
 	if err != nil {
 		zlog.With(ctx).Errorw("Generate JWT failed", "err", err)
@@ -125,7 +125,7 @@ func (b *upbitBankRepository) getBalance(ctx context.Context) (dao.UpbitAccounts
 }
 
 // GetBalance ...
-func (b *upbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalance, error) {
+func (b *stockUpbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalance, error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	accounts, err := b.getBalance(ctx)
 	if err != nil {
@@ -149,7 +149,7 @@ func (b *upbitBankRepository) GetBalance(ctx context.Context) (*model.BankBalanc
 }
 
 // GetBitCoinBalance ...
-func (b *upbitBankRepository) GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error) {
+func (b *stockUpbitBankRepository) GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	accounts, err := b.getBalance(ctx)
 	if err != nil {
@@ -173,7 +173,7 @@ func (b *upbitBankRepository) GetBitCoinBalance(ctx context.Context) (*model.Ban
 }
 
 // Buy ...
-func (b *upbitBankRepository) Buy(ctx context.Context, amount uint64) (result *model.BankTransactionResult, err error) {
+func (b *stockUpbitBankRepository) Buy(ctx context.Context, amount uint64) (result *model.BankTransactionResult, err error) {
 	zlog.With(ctx).Infow(util.LogRepo, "amount", amount)
 	orderBuy := dao.NewUpbitOrderBuy(dao.UpbitStockBTC, amount)
 	zlog.With(ctx).Infow("Order calculated", "orderBuy", orderBuy)
@@ -205,7 +205,7 @@ func (b *upbitBankRepository) Buy(ctx context.Context, amount uint64) (result *m
 }
 
 // Sell ...
-func (b *upbitBankRepository) Sell(ctx context.Context, amount float64) (result *model.BankTransactionResult, err error) {
+func (b *stockUpbitBankRepository) Sell(ctx context.Context, amount float64) (result *model.BankTransactionResult, err error) {
 	zlog.With(ctx).Infow(util.LogRepo, "amount", amount)
 	orderSell := dao.NewUpbitOrderSell(dao.UpbitStockBTC, amount)
 	zlog.With(ctx).Infow("Order calculated", "orderSell", orderSell)
@@ -236,12 +236,12 @@ func (b *upbitBankRepository) Sell(ctx context.Context, amount float64) (result 
 	return result, nil
 }
 
-func (b *upbitBankRepository) getToken() (token string, err error) {
+func (b *stockUpbitBankRepository) getToken() (token string, err error) {
 	tokenPayload := dao.NewUpbitTokenPayload(b.accessKey)
 	return tokenPayload.GenerateJWT(b.secretKey)
 }
 
-func (b *upbitBankRepository) getSHA512Token(queryable dao.Queryable) (token string, err error) {
+func (b *stockUpbitBankRepository) getSHA512Token(queryable dao.Queryable) (token string, err error) {
 	tokenPayload := dao.NewSHA512UpbitTokenPayload(b.accessKey, queryable.GetQuery())
 	return tokenPayload.GenerateJWT(b.secretKey)
 }
