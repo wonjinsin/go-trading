@@ -62,11 +62,13 @@ func init() {
 func Init(magmar *config.ViperConfig) (*Repository, error) {
 	mysqlConn, err := mysqlConnect(magmar)
 	if err != nil {
+		fmt.Println("mysqlConnect error", err)
 		return nil, err
 	}
 
 	openAPIConn, err := openAPIConnect(magmar)
 	if err != nil {
+		fmt.Println("openAPIConnect error", err)
 		return nil, err
 	}
 

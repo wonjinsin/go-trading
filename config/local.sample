@@ -27,3 +27,6 @@ newsAPI:
 
 openAI:
   apiKey: aaa
+
+header:
+  x-api-key: aaa

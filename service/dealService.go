@@ -46,15 +46,10 @@ func NewDealService(conf *config.ViperConfig,
 // Deal ...
 func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	zlog.With(ctx).Infow(util.LogSvc)
-	// decision, err := d.ask(ctx)
-	// if err != nil {
-	// 	zlog.With(ctx).Errorw("Ask failed", "err", err)
-	// 	return err
-	// }
-
-	decision := model.Decision{
-		Decision: model.DecisionStateSell,
-		Percent:  100,
+	decision, err := d.ask(ctx)
+	if err != nil {
+		zlog.With(ctx).Errorw("Ask failed", "err", err)
+		return err
 	}
 
 	zlog.With(ctx).Infow("Got decision", "decision", decision)

@@ -63,6 +63,7 @@ const (
 	UpbitFeeScale     = "upbitAPI.feeScale"
 	UpbitMinBuyAmount = "upbitAPI.minBuyAmount"
 	NewsAPIKey        = "newsAPI.apiKey"
+	HeaderXAPIKey     = "header.x-api-key"
 )
 
 // Log Const
@@ -86,4 +87,9 @@ const (
 const (
 	RemarkBankTransactionResultBuyFailedMinAmount  string = "Bank balance is less than in amount to buy"
 	RemarkBankTransactionResultSellFailedMinAmount string = "Bank balance is less than in amount to sell"
+)
+
+// S3 Config Consts
+const (
+	ConfigBucketName string = "magmar-config"
 )

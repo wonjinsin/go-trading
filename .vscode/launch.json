@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "env": { "ENV": "local" },
+      "env": { "env": "local" },
       "dlvFlags": [
         "--listen=:2345" // Delve 디버거가 이 포트를 사용하도록 설정
       ]

@@ -22,6 +22,11 @@ tool:
 build:
 	GOOS=$(OS) go build -o $(BINARY_NAME) $(MAIN)
 
+.PHONY: build-lambda
+build-lambda:
+	GOOS=linux GOARCH=amd64 go build -o bootstrap lambda/main.go
+	zip function.zip bootstrap
+
 .PHONY: vet
 vet:
 	go vet

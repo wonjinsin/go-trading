@@ -32,3 +32,6 @@ __debug_bin
 pkg.list
 __debug_bin*
 config/*.yml
+
+bootstrap
+function.zip
