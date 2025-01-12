@@ -50,6 +50,8 @@ Adjust band range by changing standard deviation:
 
 - Be cautious of increased risk when using leverage
 
+- When you need to withdraw, set percentage aggressively
+
 6. Take Profit Tips
 - After reaching 1st target, sell a portion and adjust stop loss to break even
 - If price closes below center line, sell remaining position

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"magmar/http"
 	"strings"
 
@@ -11,13 +12,44 @@ import (
 	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
 )
 
+var (
+	echoLambda  *echoadapter.EchoLambda
+	initialized bool
+)
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.Println("Starting initialization...")
+}
+
 func main() {
-	fmt.Println("Hello, World!")
+	e := http.EchoHandler()
+	if !initialized {
+		echoLambda = echoadapter.New(e)
+		initialized = true
+		log.Println("Echo initialized, starting handler...")
+	}
+	log.Println("Starting Lambda handler...")
 	lambda.Start(Handler)
 }
 
 // Handler ...
 func Handler(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	log.Printf("Handling request - path: %s, method: %s, requestID: %s\n",
+		req.RawPath,
+		req.RequestContext.HTTP.Method,
+		req.RequestContext.RequestID)
+
+	select {
+	case <-ctx.Done():
+		log.Printf("Context cancelled: %v\n", ctx.Err())
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 504,
+			Body:       "Request timeout",
+		}, ctx.Err()
+	default:
+	}
+
 	apiGatewayRequest := events.APIGatewayProxyRequest{
 		Path:       req.RawPath,
 		HTTPMethod: req.RequestContext.HTTP.Method,
@@ -33,8 +65,6 @@ func Handler(ctx context.Context, req events.LambdaFunctionURLRequest) (events.L
 		apiGatewayRequest.Path = "/" + apiGatewayRequest.Path
 	}
 
-	e := http.EchoHandler()
-	echoLambda := echoadapter.New(e)
 	response, err := echoLambda.ProxyWithContext(ctx, apiGatewayRequest)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{

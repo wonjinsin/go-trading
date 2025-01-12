@@ -38,15 +38,17 @@ func EchoHandler() *echo.Echo {
 	e.Use(mw.Auth(magmar.GetString(util.HeaderXAPIKey)))
 	e.HideBanner = true
 
+	log.Println("Initializing repositories...")
 	repo, err := repository.Init(magmar)
 	if err != nil {
 		fmt.Printf("Error when Start repository: %v\n", err)
 		os.Exit(1)
 	}
 
+	log.Println("Initializing services...")
 	svc, err := service.Init(magmar, repo)
 	if err != nil {
-		fmt.Printf("Error when Start service: %v\n", err)
+		log.Printf("Error when Start service: %v\n", err)
 		os.Exit(1)
 	}
 
