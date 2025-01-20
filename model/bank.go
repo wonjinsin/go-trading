@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"magmar/model/dao"
 	"magmar/util"
 	"math"
@@ -146,6 +147,15 @@ func NewBankTransactionResultWithdrawal(volume float64) *BankTransactionResult {
 		Volume: &volume,
 		Price:  util.ToPtr(1.0),
 	}
+}
+
+// String ...
+func (b *BankTransactionResult) String() string {
+	bytes, err := json.Marshal(b)
+	if err != nil {
+		return err.Error()
+	}
+	return string(bytes)
 }
 
 // NewTotalDeposit ...

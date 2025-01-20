@@ -21,6 +21,7 @@ type dealUsecase struct {
 	greedRepo       repository.GreedRepository
 	newsRepo        repository.NewsRepository
 	transactionRepo repository.TransactionRepository
+	telegramMsgRepo repository.MsgRepository
 }
 
 // NewDealService ...
@@ -29,7 +30,8 @@ func NewDealService(conf *config.ViperConfig,
 	upbitBankRepo repository.StockBankRepository,
 	greedRepo repository.GreedRepository,
 	newsRepo repository.NewsRepository,
-	transactionRepo repository.TransactionRepository) DealService {
+	transactionRepo repository.TransactionRepository,
+	telegramMsgRepo repository.MsgRepository) DealService {
 	return &dealUsecase{
 		conf:            conf,
 		feePercent:      conf.GetUint(util.UpbitFeePercent),
@@ -40,6 +42,7 @@ func NewDealService(conf *config.ViperConfig,
 		greedRepo:       greedRepo,
 		newsRepo:        newsRepo,
 		transactionRepo: transactionRepo,
+		telegramMsgRepo: telegramMsgRepo,
 	}
 }
 
@@ -73,6 +76,11 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	if _, err = d.saveTransaction(ctx, trResult); err != nil {
 		zlog.With(ctx).Warnw("Save transaction failed", "err", err)
 		return err
+	}
+
+	err = d.telegramMsgRepo.SendMessage(ctx, trResult.String())
+	if err != nil {
+		zlog.With(ctx).Warnw("Send message failed", "err", err)
 	}
 
 	zlog.With(ctx).Infow("Process done")

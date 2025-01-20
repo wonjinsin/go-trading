@@ -64,6 +64,8 @@ const (
 	UpbitMinBuyAmount = "upbitAPI.minBuyAmount"
 	NewsAPIKey        = "newsAPI.apiKey"
 	HeaderXAPIKey     = "header.x-api-key"
+	TelegramToken     = "telegram.token"
+	TelegramChatID    = "telegram.chatID"
 )
 
 // Log Const

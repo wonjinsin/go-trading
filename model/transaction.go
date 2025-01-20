@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -67,6 +68,22 @@ var transactionTypeMap = map[string]int{
 	"hold":       int(TransactionTypeHold),
 	"deposit":    int(TransactionTypeDeposit),
 	"withdrawal": int(TransactionTypeWithdrawal),
+}
+
+// String ...
+func (t TransactionType) String() string {
+	return toStr(transactionTypeStr, int(t))
+}
+
+// MarshalJSON ...
+func (t *TransactionType) MarshalJSON() (data []byte, err error) {
+	return json.Marshal(t.String())
+}
+
+// UnmarshalJSON ...
+func (t *TransactionType) UnmarshalJSON(data []byte) (err error) {
+	*t = TransactionType(unmarshalJSON(data, transactionTypeMap, int(TransactionTypeNone)))
+	return nil
 }
 
 // Transaction ...

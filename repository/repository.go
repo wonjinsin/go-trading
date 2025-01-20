@@ -11,6 +11,8 @@ import (
 	"magmar/model"
 	"magmar/util"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 	"github.com/tmc/langchaingo/llms/openai"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -72,9 +74,16 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 		return nil, err
 	}
 
+	telegramBot, err := tgbotapi.NewBotAPI(magmar.GetString(util.TelegramToken))
+	if err != nil {
+		fmt.Println("telegramBot error", err)
+		return nil, err
+	}
+
 	db := &model.DB{
-		OpenAI: openAPIConn,
-		MainDB: mysqlConn,
+		OpenAI:      openAPIConn,
+		MainDB:      mysqlConn,
+		TelegramBot: telegramBot,
 	}
 
 	qaRepo := NewOpenAPIQaRepository(db.OpenAI)
@@ -82,6 +91,7 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 	alternativeGreedRepo := NewAlternativeGreedRepository()
 	newsAPIRepo := NewNewsAPIRepository(magmar)
 	transactionRepo := NewGormTransactionRepository(db.MainDB)
+	telegramMsgRepo := NewTelegramMsgRepository(magmar, db.TelegramBot)
 
 	return &Repository{
 		OpenAIQa:         qaRepo,
@@ -89,6 +99,7 @@ func Init(magmar *config.ViperConfig) (*Repository, error) {
 		AlternativeGreed: alternativeGreedRepo,
 		News:             newsAPIRepo,
 		Transaction:      transactionRepo,
+		TelegramMsg:      telegramMsgRepo,
 	}, nil
 }
 
@@ -99,6 +110,7 @@ type Repository struct {
 	AlternativeGreed GreedRepository
 	News             NewsRepository
 	Transaction      TransactionRepository
+	TelegramMsg      MsgRepository
 }
 
 func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
@@ -108,6 +120,16 @@ func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
 
 func mysqlConnect(magmar *config.ViperConfig) (*gorm.DB, error) {
 	return gorm.Open(getDialector(magmar), getConfig())
+}
+
+func telegramConnect(magmar *config.ViperConfig) (*tgbotapi.BotAPI, error) {
+	telegramBot, err := tgbotapi.NewBotAPI(magmar.GetString(util.TelegramToken))
+	if err != nil {
+		fmt.Println("telegramBot error", err)
+		return nil, err
+	}
+	telegramBot.Debug = true
+	return telegramBot, nil
 }
 
 func getDialector(magmar *config.ViperConfig) gorm.Dialector {
@@ -166,4 +188,9 @@ type TransactionRepository interface {
 	GetTransactions(ctx context.Context) (model.TransactionAggregates, error)
 	GetTotalDeposit(ctx context.Context) (float64, error)
 	GetTotalWithdrawal(ctx context.Context) (float64, error)
+}
+
+// MsgRepository ...
+type MsgRepository interface {
+	SendMessage(ctx context.Context, message string) error
 }

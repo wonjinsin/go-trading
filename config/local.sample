@@ -28,5 +28,9 @@ newsAPI:
 openAI:
   apiKey: aaa
 
+telegram:
+  token: aaa
+  chatID: aaa
+
 header:
   x-api-key: aaa

@@ -30,6 +30,7 @@ func Init(conf *config.ViperConfig, repo *repository.Repository) (*Service, erro
 		repo.AlternativeGreed,
 		repo.News,
 		repo.Transaction,
+		repo.TelegramMsg,
 	)
 	bankSvc := NewBankService(
 		repo.UpbitBank,
