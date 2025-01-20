@@ -93,6 +93,7 @@ type Transaction struct {
 	Identifier *string
 	TrType     TransactionType
 	Stock      string
+	Percent    uint
 	Volume     float64
 	Price      float64
 	Reason     *string
@@ -106,6 +107,7 @@ func NewTransaction(trResult *BankTransactionResult) *Transaction {
 		BankID:     BankMainID,
 		Identifier: trResult.Identifier,
 		TrType:     trResult.TrType,
+		Percent:    trResult.Percent,
 		Stock:      trResult.Stock,
 		Remark:     trResult.Remark,
 		CreatedAt:  time.Now(),

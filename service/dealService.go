@@ -66,12 +66,13 @@ func (d *dealUsecase) Deal(ctx context.Context) (err error) {
 	case model.DecisionStateHold:
 		trResult = model.NewBankTransactionResultHold()
 	}
-	trResult.SetReason(decision.Reason)
 
 	if err != nil {
 		zlog.With(ctx).Warnw("Decision handle failed", "err", err)
 		return err
 	}
+
+	trResult.SetReasonAndPercent(decision.Reason, decision.Percent)
 
 	if _, err = d.saveTransaction(ctx, trResult); err != nil {
 		zlog.With(ctx).Warnw("Save transaction failed", "err", err)

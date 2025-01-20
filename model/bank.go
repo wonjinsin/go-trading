@@ -46,6 +46,7 @@ type BankTransactionResult struct {
 	TrType     TransactionType `json:"tr_type"`
 	Price      *float64        `json:"price"`
 	Volume     *float64        `json:"volume"`
+	Percent    uint            `json:"percent"`
 	Identifier *string         `json:"identifier"`
 	Reason     *string         `json:"reason"`
 	Remark     *string         `json:"remark"`
@@ -174,11 +175,11 @@ func (b *BankTransactionResult) NewTotalWithdrawal(totalWithdrawal float64) floa
 	return totalWithdrawal
 }
 
-// SetReason ...
-func (b *BankTransactionResult) SetReason(reason string) {
-	if reason == "" {
-		return
+// SetReasonAndPercent ...
+func (b *BankTransactionResult) SetReasonAndPercent(reason string, percent uint) {
+	if reason != "" {
+		b.Reason = util.ToPtr(reason)
 	}
 
-	b.Reason = util.ToPtr(reason)
+	b.Percent = percent
 }
