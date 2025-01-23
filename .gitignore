@@ -35,3 +35,5 @@ config/*.yml
 
 bootstrap
 function.zip
+
+localstack/data

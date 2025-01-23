@@ -13,6 +13,28 @@ services:
     ports:
       - 53306:3306
 
+  # dynamodb with local stack
+  localstack:
+    container_name: magmar_localstack
+    image: localstack/localstack
+    environment:
+      - SERVICES=dynamodb
+    volumes:
+      - "${PWD}/localstack/data:/var/lib/localstack"
+      - ./sh/localstack.sh:/etc/localstack/init/ready.d/init-aws.sh
+    ports:
+      - 4566:4566
+
+  dynamodb-admin:
+    image: "aaronshaf/dynamodb-admin:latest"
+    container_name: magmar_dynamodb-admin
+    environment:
+      - DYNAMO_ENDPOINT=http://localstack:4566
+    ports:
+      - "8001:8001"
+    depends_on:
+      - localstack
+
 networks:
   default:
     name: magmar_network

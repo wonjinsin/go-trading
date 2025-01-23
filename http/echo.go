@@ -31,7 +31,7 @@ func init() {
 
 // EchoHandler ...
 func EchoHandler() *echo.Echo {
-	magmar := config.Magmar
+	magmar := config.InitViperConfig()
 	e := echo.New()
 	e.Use(mw.SetTRID())
 	e.Use(mw.RequestLogger(zlog))

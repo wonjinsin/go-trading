@@ -22,7 +22,7 @@ const (
 
 // CustomTimes ...
 const (
-	CtxTimeOut = time.Second * 60
+	CtxTimeOut = time.Second * 60 * 5
 )
 
 // TokenTypes ...

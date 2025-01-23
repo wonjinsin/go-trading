@@ -5,32 +5,29 @@ import (
 	"context"
 	"fmt"
 	"magmar/util"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	s3Config "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
-
-// Magmar ...
-var Magmar *ViperConfig
 
 // ViperConfig ...
 type ViperConfig struct {
 	*viper.Viper
 }
 
-func init() {
-	Magmar = initViperConfig()
-}
-
-func initViperConfig() *ViperConfig {
+// InitViperConfig ...
+func InitViperConfig() *ViperConfig {
 	v := viper.New()
 
 	var env *string
@@ -58,7 +55,7 @@ func initViperConfig() *ViperConfig {
 	} else {
 		buf, err := getConfig(context.TODO(), *env)
 		if err != nil {
-			fmt.Printf("Error when reading config from s3: %v\n", err)
+			fmt.Printf("Error when get config from s3: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -81,21 +78,31 @@ func getRootDir() string {
 }
 
 func getConfig(ctx context.Context, env string) (*bytes.Buffer, error) {
-	cfg, err := s3Config.LoadDefaultConfig(ctx)
+	fmt.Println("getConfig start", "env", env)
+	cfg, err := s3Config.LoadDefaultConfig(ctx,
+		s3Config.WithRetryer(func() aws.Retryer {
+			return retry.NewStandard(func(o *retry.StandardOptions) {
+				o.MaxAttempts = 5
+			})
+		}),
+		s3Config.WithHTTPClient(
+			&http.Client{
+				Timeout: 30 * time.Second, // HTTP 타임아웃 설정
+			}))
 	if err != nil {
-		fmt.Println("getConfig error", err)
+		fmt.Println("getConfig connect error", err)
 		return nil, err
 	}
 
 	client := s3.NewFromConfig(cfg)
 
-	resp, err := client.GetObject(context.TODO(), &s3.GetObjectInput{
+	resp, err := client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(util.ConfigBucketName),
 		Key:    aws.String(fmt.Sprintf("%s.yml", env)),
 	})
 
 	if err != nil {
-		fmt.Println("getConfig error", err)
+		fmt.Println("getConfig getObject error", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -103,7 +110,7 @@ func getConfig(ctx context.Context, env string) (*bytes.Buffer, error) {
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(resp.Body)
 	if err != nil {
-		fmt.Println("getConfig error", err)
+		fmt.Println("readFrom buffer error", err)
 		return nil, err
 	}
 
