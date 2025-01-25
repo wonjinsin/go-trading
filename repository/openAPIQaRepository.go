@@ -23,7 +23,7 @@ func NewOpenAPIQaRepository(llm *openai.LLM) QaRepository {
 func (o *openAPIQaRepository) Ask(ctx context.Context, prompt string) (decision *model.Decision, err error) {
 	zlog.With(ctx).Infow(util.LogRepo, "prompt", prompt)
 	resp, err := llms.GenerateFromSinglePrompt(ctx, o.conn, prompt, llms.CallOption(func(opts *llms.CallOptions) {
-		opts.Model = "gpt-4o"
+		opts.Model = "gpt-4o-mini"
 		opts.JSONMode = true
 	}))
 	if err != nil {

@@ -45,17 +45,17 @@ const bitcoinTemplate = `
     Response example:
 	{
 		"decision": "Buy",
-		"percent": 15,
+		"percent": 50,
 		"reason": "After reviewing the current investment state and incorporating insights from both market analysis and recent crypto news, a bullish trend is evident. The EMA_10 has crossed above the SMA_10, a signal often associated with the initiation of an uptrend. This crossover, combined with our analysis of the current market sentiment being positively influenced by recent news articles, suggests increasing momentum and a strong opportunity for a profitable buy decision. This decision aligns with our risk management protocols, considering both the potential for profit and the current balance of the portfolio."
 	},
 	{
 		"decision": "Buy",
-		"percent": 25,
+		"percent": 55,
 		"reason": "This decision to invest 25% of our portfolio in Bitcoin is predicated on a multi-faceted analysis incorporating market sentiment, technical indicators, and the prevailing crypto news landscape, alongside a prudent evaluation of our current investment state. A recent trend reversal has been identified, underscored by the EMA_10 decisively crossing above the SMA_10, heralding a bullish market phase. Concurrently, the RSI_14 reading has settled around 45, suggesting that Bitcoin is neither overbought nor oversold, thus presenting a compelling buy signal at the current price levels. Additionally, the Fear and Greed Index has recently dialed back from 'Extreme Greed' to 'Greed', signaling a cooling yet still positive investor sentiment, potentially pre-empting a market upswing. Notably, the latest crypto news analysis indicates a burgeoning confidence among institutional investors towards Bitcoin, particularly in light of regulatory clarity and advancements in blockchain technology, fostering a favorable environment for price appreciation. Furthermore, our portfolio's current allocation, with a balanced mix of BTC and KRW, coupled with an in-depth review of past trading decisions, suggests an opportune moment to augment our Bitcoin position. This strategic augmentation is designed to leverage anticipated market momentum while maintaining a vigilant stance on risk management, aiming to enhance our portfolio's profitability in alignment with our long-term investment objectives."
 	}
     {
 		"decision": "Sell",
-		"percent": 20,
+		"percent": 60,
 		"reason": "Upon detailed analysis of the asset's historical data and previous decision outcomes, it is evident that the asset is currently peaking near a historically significant resistance level. This observation is underscored by the RSI_14 indicator's ascent into overbought territory above 75, hinting at an overvaluation of the asset. Such overbought conditions are supported by a noticeable bearish divergence in the MACD, where despite the asset's price holding near its peak, the MACD line demonstrates a downward trajectory. This divergence aligns with a marked increase in trading volume, indicative of a potential buying climax which historically precedes market corrections. Reflecting on past predictions, similar conditions have often resulted in favorable sell outcomes, reinforcing the current decision to sell. Considering these factors - historical resistance alignment, overbought RSI_14, MACD bearish divergence, and peak trading volume - alongside a review of previous successful sell signals under comparable conditions, a strategic decision to sell 20% of the asset is recommended to leverage the anticipated market downturn and secure profits from the elevated price levels."
 	},
 	{

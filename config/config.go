@@ -87,7 +87,7 @@ func getConfig(ctx context.Context, env string) (*bytes.Buffer, error) {
 		}),
 		s3Config.WithHTTPClient(
 			&http.Client{
-				Timeout: 30 * time.Second, // HTTP 타임아웃 설정
+				Timeout: 30 * time.Second,
 			}))
 	if err != nil {
 		fmt.Println("getConfig connect error", err)
