@@ -202,37 +202,40 @@ func (d *dealUsecase) sell(ctx context.Context, percentage uint) (trResult *mode
 func (d *dealUsecase) saveTransaction(ctx context.Context, trResult *model.BankTransactionResult) (transaction *model.TransactionAggregate, err error) {
 	zlog.With(ctx).Infow("saveTransaction start", "trResult", trResult)
 
-	bankBalance, err := d.upbitBankRepo.GetBalance(ctx)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get balance failed", "err", err)
-		return nil, err
-	}
+	// pass because not use db
+	return nil, nil
 
-	bitCoinBalance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
-	if err != nil && !errors.Is(err, errors.NotFound) {
-		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
-		return nil, err
-	}
+	// bankBalance, err := d.upbitBankRepo.GetBalance(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get balance failed", "err", err)
+	// 	return nil, err
+	// }
 
-	totalDeposit, err := d.transactionRepo.GetTotalDeposit(ctx)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get total deposit failed", "err", err)
-		return nil, err
-	}
+	// bitCoinBalance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
+	// if err != nil && !errors.Is(err, errors.NotFound) {
+	// 	zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
+	// 	return nil, err
+	// }
 
-	totalWithdrawal, err := d.transactionRepo.GetTotalWithdrawal(ctx)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get total withdrawal failed", "err", err)
-		return nil, err
-	}
+	// totalDeposit, err := d.transactionRepo.GetTotalDeposit(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get total deposit failed", "err", err)
+	// 	return nil, err
+	// }
 
-	transaction = model.NewTransactionAggregate(trResult, bankBalance, bitCoinBalance, totalDeposit, totalWithdrawal)
+	// totalWithdrawal, err := d.transactionRepo.GetTotalWithdrawal(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get total withdrawal failed", "err", err)
+	// 	return nil, err
+	// }
 
-	transaction, err = d.transactionRepo.NewTransaction(ctx, transaction)
-	if err != nil {
-		zlog.With(ctx).Warnw("Save transaction failed", "err", err)
-		return nil, err
-	}
+	// transaction = model.NewTransactionAggregate(trResult, bankBalance, bitCoinBalance, totalDeposit, totalWithdrawal)
 
-	return transaction, nil
+	// transaction, err = d.transactionRepo.NewTransaction(ctx, transaction)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Save transaction failed", "err", err)
+	// 	return nil, err
+	// }
+
+	// return transaction, nil
 }

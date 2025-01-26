@@ -66,6 +66,8 @@ const (
 	HeaderXAPIKey     = "header.x-api-key"
 	TelegramToken     = "telegram.token"
 	TelegramChatID    = "telegram.chatID"
+	DynamoDBRegion    = "dynamodb.region"
+	DynamoDBEndpoint  = "dynamodb.endpoint"
 )
 
 // Log Const

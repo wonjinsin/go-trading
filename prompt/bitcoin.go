@@ -42,6 +42,8 @@ const bitcoinTemplate = `
 	
     Tell me decision whether to Buy, Sell, or Hold at the moment based on the provided data by json format.
 	and percentage of how much percent should invest and reason why.
+	Please use the investment strategy and data to make a decision.
+	percet is just example. please use the strategy and data to make a decision.
     Response example:
 	{
 		"decision": "Buy",

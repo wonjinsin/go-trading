@@ -11,6 +11,10 @@ import (
 	"magmar/model"
 	"magmar/util"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/tmc/langchaingo/llms/openai"
@@ -62,11 +66,12 @@ func init() {
 
 // Init ...
 func Init(magmar *config.ViperConfig) (*Repository, error) {
-	mysqlConn, err := mysqlConnect(magmar)
-	if err != nil {
-		fmt.Println("mysqlConnect error", err)
-		return nil, err
-	}
+	var mysqlConn *gorm.DB
+	// mysqlConn, err := mysqlConnect(magmar)
+	// if err != nil {
+	// 	fmt.Println("mysqlConnect error", err)
+	// 	return nil, err
+	// }
 
 	openAPIConn, err := openAPIConnect(magmar)
 	if err != nil {
@@ -120,6 +125,25 @@ func openAPIConnect(magmar *config.ViperConfig) (*openai.LLM, error) {
 
 func mysqlConnect(magmar *config.ViperConfig) (*gorm.DB, error) {
 	return gorm.Open(getDialector(magmar), getConfig())
+}
+
+func dynamodbConnect(magmar *config.ViperConfig) (*dynamodb.Client, error) {
+
+	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
+		awsConfig.WithRegion(magmar.GetString(util.DynamoDBRegion)),
+	)
+
+	if err != nil {
+		log.Fatalf("dynamodbConnect error: %v", err)
+		return nil, err
+	}
+
+	// Create DynamoDB client
+	return dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
+		if magmar.GetString(util.DynamoDBEndpoint) != "" {
+			o.BaseEndpoint = aws.String(magmar.GetString(util.DynamoDBEndpoint))
+		}
+	}), nil
 }
 
 func telegramConnect(magmar *config.ViperConfig) (*tgbotapi.BotAPI, error) {
@@ -185,7 +209,6 @@ type NewsRepository interface {
 // TransactionRepository ...
 type TransactionRepository interface {
 	NewTransaction(ctx context.Context, transaction *model.TransactionAggregate) (*model.TransactionAggregate, error)
-	GetTransactions(ctx context.Context) (model.TransactionAggregates, error)
 	GetTotalDeposit(ctx context.Context) (float64, error)
 	GetTotalWithdrawal(ctx context.Context) (float64, error)
 }

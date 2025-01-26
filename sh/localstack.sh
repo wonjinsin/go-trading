@@ -41,4 +41,3 @@ awslocal dynamodb put-item \
   }'
 
 echo "Initial data inserted successfully"
-

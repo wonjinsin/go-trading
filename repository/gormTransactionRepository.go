@@ -37,20 +37,6 @@ func (g *gormTransactionRepository) NewTransaction(ctx context.Context, transact
 	return transaction, nil
 }
 
-// GetTransactions ...
-func (g *gormTransactionRepository) GetTransactions(ctx context.Context) (transactions model.TransactionAggregates, err error) {
-	zlog.With(ctx).Infow(util.LogRepo)
-
-	scope := g.conn.WithContext(ctx)
-	scope = scope.Find(&transactions)
-	if err = scope.Error; err != nil {
-		zlog.With(ctx).Errorw("GetTransactions Error", "err", err)
-		return nil, err
-	}
-
-	return transactions, nil
-}
-
 // GetTotalDeposit ...
 func (g *gormTransactionRepository) GetTotalDeposit(ctx context.Context) (float64, error) {
 	zlog.With(ctx).Infow(util.LogRepo)

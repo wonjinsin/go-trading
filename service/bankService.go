@@ -6,8 +6,6 @@ import (
 	"magmar/model/dto"
 	"magmar/repository"
 	"magmar/util"
-
-	"github.com/juju/errors"
 )
 
 // bankUsecase ...
@@ -40,40 +38,42 @@ func (b *bankUsecase) Withdrawal(ctx context.Context, withdrawal dto.Withdrawal)
 
 func (b *bankUsecase) saveTransaction(ctx context.Context, trResult *model.BankTransactionResult) (transaction *model.TransactionAggregate, err error) {
 	zlog.With(ctx).Infow("saveTransaction start", "trResult", trResult)
+	// pass because not use db
+	return nil, nil
 
-	bankBalance, err := b.upbitBankRepo.GetBalance(ctx)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get balance failed", "err", err)
-		return nil, err
-	}
+	// bankBalance, err := b.upbitBankRepo.GetBalance(ctx)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get balance failed", "err", err)
+	// 	return nil, err
+	// }
 
-	bitCoinBalance, err := b.upbitBankRepo.GetBitCoinBalance(ctx)
-	if err != nil && !errors.Is(err, errors.NotFound) {
-		zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
-		return nil, err
-	}
+	// bitCoinBalance, err := b.upbitBankRepo.GetBitCoinBalance(ctx)
+	// if err != nil && !errors.Is(err, errors.NotFound) {
+	// 	zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
+	// 	return nil, err
+	// }
 
-	totalDeposit, err := b.transactionRepo.GetTotalDeposit(ctx)
-	totalDeposit = trResult.NewTotalDeposit(totalDeposit)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get total deposit failed", "err", err)
-		return nil, err
-	}
+	// totalDeposit, err := b.transactionRepo.GetTotalDeposit(ctx)
+	// totalDeposit = trResult.NewTotalDeposit(totalDeposit)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get total deposit failed", "err", err)
+	// 	return nil, err
+	// }
 
-	totalWithdrawal, err := b.transactionRepo.GetTotalWithdrawal(ctx)
-	totalWithdrawal = trResult.NewTotalWithdrawal(totalWithdrawal)
-	if err != nil {
-		zlog.With(ctx).Warnw("Get total withdrawal failed", "err", err)
-		return nil, err
-	}
+	// totalWithdrawal, err := b.transactionRepo.GetTotalWithdrawal(ctx)
+	// totalWithdrawal = trResult.NewTotalWithdrawal(totalWithdrawal)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Get total withdrawal failed", "err", err)
+	// 	return nil, err
+	// }
 
-	transaction = model.NewTransactionAggregate(trResult, bankBalance, bitCoinBalance, totalDeposit, totalWithdrawal)
+	// transaction = model.NewTransactionAggregate(trResult, bankBalance, bitCoinBalance, totalDeposit, totalWithdrawal)
 
-	transaction, err = b.transactionRepo.NewTransaction(ctx, transaction)
-	if err != nil {
-		zlog.With(ctx).Warnw("Save transaction failed", "err", err)
-		return nil, err
-	}
+	// transaction, err = b.transactionRepo.NewTransaction(ctx, transaction)
+	// if err != nil {
+	// 	zlog.With(ctx).Warnw("Save transaction failed", "err", err)
+	// 	return nil, err
+	// }
 
-	return transaction, nil
+	// return transaction, nil
 }

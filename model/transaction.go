@@ -3,6 +3,8 @@ package model
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // BankID ...
@@ -38,6 +40,12 @@ func NewTransactionAggregate(
 		Transaction:        *transaction,
 		TransactionSummary: transactionSummary,
 	}
+}
+
+// SetID ...
+func (t *TransactionAggregate) SetID() {
+	t.Transaction.SetID()
+	t.TransactionSummary.SetID()
 }
 
 // TransactionAggregates ...
@@ -137,6 +145,11 @@ func (Transaction) TableName() string {
 	return "transaction"
 }
 
+// SetID ...
+func (t *Transaction) SetID() {
+	t.ID = uuid.New().ID()
+}
+
 // TransactionSummary ...
 type TransactionSummary struct {
 	ID                 uint32
@@ -185,6 +198,12 @@ func (TransactionSummary) TableName() string {
 	return "transaction_summary"
 }
 
+// SetID ...
+func (t *TransactionSummary) SetID() {
+	t.ID = uuid.New().ID()
+	t.StockSummaries.SetIDs()
+}
+
 // TransactionStockSummary ...
 type TransactionStockSummary struct {
 	ID                   uint32
@@ -208,5 +227,17 @@ func (TransactionStockSummary) TableName() string {
 	return "transaction_stock_summary"
 }
 
+// SetID ...
+func (t *TransactionStockSummary) SetID() {
+	t.ID = uuid.New().ID()
+}
+
 // TransactionStockSummaries ...
 type TransactionStockSummaries []*TransactionStockSummary
+
+// SetIDs ...
+func (ts TransactionStockSummaries) SetIDs() {
+	for _, v := range ts {
+		v.SetID()
+	}
+}
