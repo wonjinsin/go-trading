@@ -84,27 +84,18 @@ func (p *UpbitTokenPayload) GenerateJWT(secretKey string) (string, error) {
 		SignedString(secretKeyByte)
 }
 
-// UpbitCurrency ...
-type UpbitCurrency string
-
-// UpbitCurrencyConst ...
-const (
-	UpbitCurrencyKRW UpbitCurrency = "KRW"
-	UpbitCurrencyBTC UpbitCurrency = "BTC"
-)
-
 // UpbitAccount ...
 type UpbitAccount struct {
-	Currency    UpbitCurrency `json:"currency"`
-	Balance     string        `json:"balance"`
-	AvgBuyPrice string        `json:"avg_buy_price"`
+	Currency    string `json:"currency"`
+	Balance     string `json:"balance"`
+	AvgBuyPrice string `json:"avg_buy_price"`
 }
 
 // UpbitAccounts ...
 type UpbitAccounts []*UpbitAccount
 
 // GetAccountByCurrency ...
-func (us UpbitAccounts) GetAccountByCurrency(currency UpbitCurrency) *UpbitAccount {
+func (us UpbitAccounts) GetAccountByCurrency(currency string) *UpbitAccount {
 	for _, account := range us {
 		if account.Currency == currency {
 			return account

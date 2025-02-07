@@ -32,5 +32,9 @@ telegram:
   token: aaa
   chatID: aaa
 
+dynamodb:
+  region: aaa
+  endpoint: aaa
+
 header:
   x-api-key: aaa

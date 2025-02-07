@@ -133,7 +133,7 @@ func (b *stockUpbitBankRepository) GetBalance(ctx context.Context) (*model.BankB
 		return nil, err
 	}
 
-	account := accounts.GetAccountByCurrency(dao.UpbitCurrencyKRW)
+	account := accounts.GetAccountByCurrency(util.CoinMap[util.Balance][util.UpbitCurrency])
 	if account == nil {
 		zlog.With(ctx).Errorw("Get account currecy not exist", "accounts", accounts)
 		return nil, errors.NotFoundf("Get account currecy not exist")
@@ -148,8 +148,8 @@ func (b *stockUpbitBankRepository) GetBalance(ctx context.Context) (*model.BankB
 	return balance, nil
 }
 
-// GetBitCoinBalance ...
-func (b *stockUpbitBankRepository) GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error) {
+// GetCoinBalance ...
+func (b *stockUpbitBankRepository) GetCoinBalance(ctx context.Context, currency string) (*model.BankBalance, error) {
 	zlog.With(ctx).Infow(util.LogRepo)
 	accounts, err := b.getBalance(ctx)
 	if err != nil {
@@ -157,7 +157,7 @@ func (b *stockUpbitBankRepository) GetBitCoinBalance(ctx context.Context) (*mode
 		return nil, err
 	}
 
-	account := accounts.GetAccountByCurrency(dao.UpbitCurrencyBTC)
+	account := accounts.GetAccountByCurrency(currency)
 	if account == nil {
 		zlog.With(ctx).Errorw("Get account currecy not exist", "accounts", accounts)
 		return nil, errors.NotFoundf("Get account currecy not exist")

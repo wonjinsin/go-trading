@@ -23,7 +23,7 @@ type TransactionAggregate struct {
 func NewTransactionAggregate(
 	trResult *BankTransactionResult,
 	bankBalance *BankBalance,
-	bitCoinBalance *BankBalance,
+	coinBalance *BankBalance,
 	totalDeposit float64,
 	totalWithdrawal float64,
 ) *TransactionAggregate {
@@ -33,7 +33,7 @@ func NewTransactionAggregate(
 		totalDeposit,
 		totalWithdrawal,
 		bankBalance,
-		bitCoinBalance,
+		coinBalance,
 	)
 
 	return &TransactionAggregate{
@@ -168,7 +168,7 @@ func NewTransactionSummary(
 	totalDeposit float64,
 	totalWithdrawal float64,
 	bankBalance *BankBalance,
-	bitCoinBalance *BankBalance,
+	coinBalance *BankBalance,
 ) *TransactionSummary {
 	ts := &TransactionSummary{
 		TotalDeposit:    totalDeposit,
@@ -180,9 +180,9 @@ func NewTransactionSummary(
 		ts.StockSummaries = append(ts.StockSummaries, NewTransactionStockSummary(bankBalance))
 	}
 
-	if bitCoinBalance != nil {
-		ts.TotalInvestBalance = bitCoinBalance.Balance * bitCoinBalance.AvgBuyPrice
-		ts.StockSummaries = append(ts.StockSummaries, NewTransactionStockSummary(bitCoinBalance))
+	if coinBalance != nil {
+		ts.TotalInvestBalance = coinBalance.Balance * coinBalance.AvgBuyPrice
+		ts.StockSummaries = append(ts.StockSummaries, NewTransactionStockSummary(coinBalance))
 	}
 
 	currentBalance := ts.TotalBankBalance + ts.TotalInvestBalance

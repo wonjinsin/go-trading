@@ -47,7 +47,7 @@ func (b *bankUsecase) saveTransaction(ctx context.Context, trResult *model.BankT
 	// 	return nil, err
 	// }
 
-	// bitCoinBalance, err := b.upbitBankRepo.GetBitCoinBalance(ctx)
+	// bitCoinBalance, err := b.upbitBankRepo.GetCoinBalance(ctx, util.CoinMap[util.BitCoin][util.UpbitCurrency])
 	// if err != nil && !errors.Is(err, errors.NotFound) {
 	// 	zlog.With(ctx).Warnw("Get bitcoin balance failed", "err", err)
 	// 	return nil, err

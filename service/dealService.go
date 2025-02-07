@@ -114,7 +114,7 @@ func (d *dealUsecase) ask(ctx context.Context) (decision *model.Decision, err er
 		return nil, err
 	}
 
-	news, err := d.newsRepo.GetNews(ctx, []string{"bitcoin", "predict"})
+	news, err := d.newsRepo.GetNews(ctx, []string{util.CoinMap[util.BitCoin][util.News], "predict"})
 	if err != nil {
 		zlog.With(ctx).Warnw("Get news failed", "err", err)
 		return nil, err
@@ -173,7 +173,7 @@ func (d *dealUsecase) sell(ctx context.Context, percentage uint) (trResult *mode
 		return nil, errors.New("No percentage")
 	}
 
-	balance, err := d.upbitBankRepo.GetBitCoinBalance(ctx)
+	balance, err := d.upbitBankRepo.GetCoinBalance(ctx, util.CoinMap[util.BitCoin][util.UpbitCurrency])
 	if err != nil {
 		if errors.Is(err, errors.NotFound) {
 			zlog.With(ctx).Infow("No bitcoin balance")

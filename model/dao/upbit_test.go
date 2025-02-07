@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"magmar/util"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,13 +53,13 @@ func TestUpbitTokenPayload_GenerateJWT(t *testing.T) {
 func TestUpbitAccounts_GetAccountByCurrency(t *testing.T) {
 	// Given
 	accounts := UpbitAccounts{
-		{Currency: UpbitCurrencyKRW, Balance: "1000000"},
-		{Currency: UpbitCurrencyBTC, Balance: "1.5"},
+		{Currency: util.CoinMap[util.Balance][util.UpbitCurrency], Balance: "1000000"},
+		{Currency: util.CoinMap[util.BitCoin][util.UpbitCurrency], Balance: "1.5"},
 	}
 
 	// When
-	krwAccount := accounts.GetAccountByCurrency(UpbitCurrencyKRW)
-	btcAccount := accounts.GetAccountByCurrency(UpbitCurrencyBTC)
+	krwAccount := accounts.GetAccountByCurrency(util.CoinMap[util.Balance][util.UpbitCurrency])
+	btcAccount := accounts.GetAccountByCurrency(util.CoinMap[util.BitCoin][util.UpbitCurrency])
 	nonExistentAccount := accounts.GetAccountByCurrency("NON_EXISTENT")
 
 	// Then

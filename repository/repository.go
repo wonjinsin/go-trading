@@ -191,7 +191,7 @@ type StockBankRepository interface {
 	GetMarketPriceDataDay(ctx context.Context, stock model.StockName, date uint) (marketPrices model.MarketPrices, err error)
 	GetMarketPriceDataMin(ctx context.Context, stock model.StockName, interval uint) (marketPrices model.MarketPrices, err error)
 	GetBalance(ctx context.Context) (*model.BankBalance, error)
-	GetBitCoinBalance(ctx context.Context) (*model.BankBalance, error)
+	GetCoinBalance(ctx context.Context, currency string) (*model.BankBalance, error)
 	Buy(ctx context.Context, amount uint64) (*model.BankTransactionResult, error)
 	Sell(ctx context.Context, amount float64) (*model.BankTransactionResult, error)
 }
